@@ -45,12 +45,38 @@
 #   Container Registry vs Artifact Registry   - https://cloud.google.com/blog/products/application-development/understanding-artifact-registry-vs-container-registry
 #   Principle of least privilege              - https://cloud.google.com/blog/products/identity-security/dont-get-pwned-practicing-the-principle-of-least-privilege
 
-name: Build and Deploy to Cloud Run
 
+name: CI
 on:
   push:
     branches:
-      - main
+      - main  # Trigger on push to main branch
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+name: CD
+on:
+  workflow_run:
+      workflows: [CI]
+      branches: [main]
+      types:
+        - completed
 
 env:
   PROJECT_ID: thinkspace-backend # TODO: update Google Cloud project id
@@ -78,18 +104,6 @@ jobs:
         uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
-
-
-      # BEGIN - Docker auth and build (NOTE: If you already have a container image, these Docker steps can be omitted)
-
-      # Authenticate Docker to Google Cloud Artifact Registry
-      # - name: Docker Auth
-      #   id: docker-auth
-      #   uses: 'docker/login-action@v1'
-      #   with:
-      #     username: 'oauth2accesstoken'
-      #     password: '${{ steps.auth.outputs.access_token }}'
-      #     registry: '${{ env.GAR_LOCATION }}-docker.pkg.dev'
 
       # NOTE: Alternative option - authentication via credentials json
       - name: Docker Auth
