@@ -70,13 +70,13 @@ jobs:
       - name: Run tests
         run: npm test
 
-name: CD
-on:
-  workflow_run:
-      workflows: [CI]
-      branches: [main]
-      types:
-        - completed
+# name: CD
+# on:
+#   workflow_run:
+#       workflows: [CI]
+#       branches: [main]
+#       types:
+#         - completed
 
 # env:
 #   PROJECT_ID: thinkspace-backend # TODO: update Google Cloud project id
