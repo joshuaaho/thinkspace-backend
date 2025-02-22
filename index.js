@@ -8,8 +8,8 @@ import routes from "./routes/index.js";
 import AppError from "./classes/AppError.js";
 const app = express();
 
-app.listen(process.env.PORT, () => {
-  console.log(`Example app listening on port ${process.env.PORT}`);
+app.listen(process.env.EXPRESS_PORT, () => {
+  console.log(`Example app listening on port ${process.env.EXPRESS_PORT}`);
 });
 
 app.use(cors({ origin: process.env.APP_SERVER, credentials: true }));
