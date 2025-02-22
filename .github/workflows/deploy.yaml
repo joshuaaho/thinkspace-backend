@@ -104,7 +104,8 @@ jobs:
           region: ${{ env.REGION }}
           # NOTE: If using a pre-built image, update the image name here
           image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}
-          flags: '--port=27017 --allow-unauthenticated'
+          env_vars_file: .env
+          flags: '--port=8080 --allow-unauthenticated'
           # NOTE: You can also set env variables here:
           #  env_vars: |
           #  NODE_ENV=production
