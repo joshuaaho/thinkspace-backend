@@ -1,5 +1,5 @@
-import Joi from "joi";
-import validatetId from "./id.validation.js";
+import Joi from 'joi';
+import validatetId from './id.validation.js';
 
 //ALL DONE
 
@@ -27,7 +27,7 @@ const queryPosts = {
   query: Joi.object({
     tags: Joi.array().items(Joi.string()),
     sort: Joi.string(),
-    q: Joi.string().allow(""),
+    q: Joi.string().allow(''),
     offset: Joi.number(),
     limit: Joi.number(),
   }),

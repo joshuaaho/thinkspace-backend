@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-import "dotenv/config";
+import mongoose from 'mongoose';
+import 'dotenv/config';
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
@@ -25,9 +25,9 @@ const userSchema = new Schema({
   followedBy: [
     {
       type: mongoose.Schema.ObjectId,
-      ref: "User",
+      ref: 'User',
     },
   ],
 });
 
-export default mongoose.model("User", userSchema);
+export default mongoose.model('User', userSchema);

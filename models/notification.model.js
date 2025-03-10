@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
 
@@ -6,11 +6,11 @@ const notificationSchema = new Schema(
   {
     to: {
       type: Schema.ObjectId,
-      ref: "User",
+      ref: 'User',
     },
     from: {
       type: Schema.ObjectId,
-      ref: "User",
+      ref: 'User',
     },
     redirectPath: {
       type: String,
@@ -19,7 +19,7 @@ const notificationSchema = new Schema(
     isRead: { type: Boolean, default: false },
     resourceId: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export default mongoose.model("Notification", notificationSchema);
+export default mongoose.model('Notification', notificationSchema);

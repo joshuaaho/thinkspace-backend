@@ -1,7 +1,7 @@
-import AppError from "../classes/AppError.js";
-import tokenService from "./token.service.js";
-import { User } from "../models/index.js";
-import bcrypt from "bcryptjs";
+import User from '#models/user.model';
+import AppError from '#classes/AppError';
+import tokenService from '#services/token.service';
+import bcrypt from 'bcryptjs';
 
 const login = async (username, password) => {
   const user = await User.findOne({
@@ -9,12 +9,13 @@ const login = async (username, password) => {
   });
 
   if (!user) {
-    throw new AppError("User not found", 404);
+    throw new AppError('User not found', 404);
   }
+
   const passwordIsMatch = await bcrypt.compare(password, user.password);
 
   if (!passwordIsMatch) {
-    throw new AppError("Wrong password", 404);
+    throw new AppError('Wrong password', 404);
   }
 
   const refreshToken = await tokenService.generateRefreshToken(user._id);
@@ -33,8 +34,7 @@ const refresh = async (refreshToken) => {
 };
 
 const logout = async (refreshToken) => {
-  const user = await User.findOne({ refreshToken });
-
+  const user = await tokenService.verifyRefreshToken(refreshToken);
   user.refreshToken = null;
   await user.save();
 };

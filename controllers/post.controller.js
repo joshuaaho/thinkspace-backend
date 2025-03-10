@@ -1,4 +1,4 @@
-import { postService } from '../services/index.js';
+import postService from '#services/post.service';
 
 const getPostById = async (req, res, next) => {
   try {
@@ -49,7 +49,7 @@ const likePostById = async (req, res, next) => {
 
 const unlikePostById = async (req, res, next) => {
   try {
-    const updatedPost = await postService.unlikePostById(req.params.postId, req.user);
+    const updatedPost = await postService.unlikePostById(req.params.postId);
     return res.status(200).json(updatedPost);
   } catch (err) {
     return next(err);

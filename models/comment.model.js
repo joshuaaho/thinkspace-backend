@@ -1,19 +1,19 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
 const commentSchema = new Schema(
   {
     authorId: {
       type: Schema.ObjectId,
-      ref: "User",
+      ref: 'User',
     },
     postId: {
       type: Schema.ObjectId,
-      ref: "Post",
+      ref: 'Post',
     },
     parentCommentId: {
       type: Schema.ObjectId,
-      ref: "Comment",
+      ref: 'Comment',
       default: null,
     },
     content: { type: String },
@@ -21,15 +21,15 @@ const commentSchema = new Schema(
     likedBy: [
       {
         type: mongoose.Schema.ObjectId,
-        ref: "User",
+        ref: 'User',
       },
     ],
   },
   {
     timestamps: {
-      createdAt: "postedAt",
+      createdAt: 'postedAt',
     },
-  }
+  },
 );
 
-export default mongoose.model("Comment", commentSchema);
+export default mongoose.model('Comment', commentSchema);

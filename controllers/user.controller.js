@@ -1,4 +1,4 @@
-import { userService } from '../services/index.js';
+import userService from '#services/user.service';
 
 const getUserById = async (req, res, next) => {
   try {
@@ -20,7 +20,7 @@ const queryUsers = async (req, res, next) => {
 
 const getUsersNotifications = async (req, res, next) => {
   try {
-    const userNotifications = await userService.getUsersNotifications(req.params.userId, req.user);
+    const userNotifications = await userService.getUsersNotifications(req.params.userId);
     return res.status(200).json(userNotifications);
   } catch (err) {
     return next(err);

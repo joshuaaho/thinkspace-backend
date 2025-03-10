@@ -1,5 +1,7 @@
-import { userService, authService } from '../services/index.js';
-import AppError from '../classes/AppError.js';
+import userService from '#services/user.service';
+import authService from '#services/auth.service';
+import AppError from '#classes/AppError';
+
 const register = async (req, res, next) => {
   try {
     await userService.createUser(req.body);

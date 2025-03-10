@@ -1,9 +1,13 @@
-import { Post, Notification } from '../models/index.js';
-import AppError from '../classes/AppError.js';
-import { toRegex } from '../utils/utils.js';
-import mongoose from 'mongoose';
+import Post from '#models/post.model';
+import Notification from '#models/notification.model';
+import AppError from '#classes/AppError';
+import toRegex from '#utils/toRegex';
+
 import sanitizeHtml from 'sanitize-html';
-import { getReceiverSocketId, io } from '../socket/socket.js';
+import { getReceiverSocketId } from '../index.js';
+import { socketIOSingleton } from '#socket/socket-factory';
+import logger from '#utils/logger';
+import { getUser } from '#utils/context';
 
 const getPostById = async (postId) => {
   const post = await Post.findById(postId).populate({
@@ -18,7 +22,9 @@ const getPostById = async (postId) => {
   return post;
 };
 
-const createPost = async (newPostData, user) => {
+const createPost = async (newPostData) => {
+  const user = getUser();
+
   let newPost = null;
   let notificationList = null;
   const postsWithSameTitle = await Post.find({ title: newPostData.title });
@@ -27,38 +33,35 @@ const createPost = async (newPostData, user) => {
     throw new AppError('Title has already been taken', 409);
   }
 
-  await mongoose.connection.transaction(async (session) => {
-    newPost = await Post.create(
-      [
-        {
-          ...newPostData,
-          authorId: user._id,
-          content: sanitizeHtml(newPostData.content),
-        },
-      ],
+  newPost = await Post.create([
+    {
+      ...newPostData,
+      authorId: user._id,
+      content: sanitizeHtml(newPostData.content),
+    },
+  ]);
 
-      { session }
-    );
+  logger.info('Post created successfully');
 
-    notificationList = user.followedBy.map((followerId) => ({
-      from: user._id,
-      to: followerId,
-      redirectPath: `/posts/${newPost[0]._id}`,
-      event: 'has a new post',
-    }));
+  notificationList = user.followedBy.map((followerId) => ({
+    from: user._id,
+    to: followerId,
+    redirectPath: `/posts/${newPost[0]._id}`,
+    event: 'has a new post',
+  }));
 
-    notificationList = await Notification.insertMany(notificationList, {
-      session,
-      populate: { path: 'from', select: 'profileImgUrl username' },
-    });
+  notificationList = await Notification.insertMany(notificationList, {
+    populate: { path: 'from', select: 'profileImgUrl username' },
   });
+
+  logger.info('Post created notification created');
 
   user.followedBy.map((followerId) => {
     const receiverSocketId = getReceiverSocketId(followerId);
     if (receiverSocketId) {
       io.to(receiverSocketId).emit(
         'notifications',
-        notificationList.filter((notification) => notification.to.equals(followerId))[0]
+        notificationList.filter((notification) => notification.to.equals(followerId))[0],
       );
     }
   });
@@ -66,6 +69,8 @@ const createPost = async (newPostData, user) => {
 };
 
 const queryPosts = async ({ tags = false, q = '', sort = '-postedAt', offset = 0, limit = 10 }) => {
+  logger.info('Querying posts', { tags, query: q, sort, offset, limit });
+
   const qRegex = toRegex(q);
   const filteredPosts = await Post.find({
     ...(tags && { tags: { $in: tags } }),
@@ -75,10 +80,15 @@ const queryPosts = async ({ tags = false, q = '', sort = '-postedAt', offset = 0
     .skip(offset)
     .limit(limit)
     .populate({ path: 'authorId', select: ['username', 'profileImgUrl'] });
+
+  logger.info('Posts query completed');
+
   return filteredPosts;
 };
 
-const likePostById = async (postId, user) => {
+const likePostById = async (postId) => {
+  const user = getUser();
+
   const postToLike = await Post.findById(postId);
 
   if (!postToLike) {
@@ -88,12 +98,15 @@ const likePostById = async (postId, user) => {
   if (user._id.equals(postToLike.authorId)) {
     throw new AppError('You cannot like your own post', 403);
   }
+
   if (postToLike.likedBy.includes(user._id)) {
     throw new AppError('You have already liked the post', 400);
   }
 
-  const updatedPost = await (
-    await postToLike.likedBy.push(user._id).save()
+  const updatedPost = await Post.findOneAndUpdate(
+    { _id: postToLike._id }, // Filter to find the document
+    { $push: { likedBy: user._id } },
+    { new: true }, // Update operation to push the new value into the array
   ).populate({
     path: 'authorId',
     select: ['username', 'profileImgUrl'],
@@ -105,6 +118,9 @@ const likePostById = async (postId, user) => {
     redirectPath: `/posts/${postId}`,
     event: 'has liked your post',
   });
+
+  logger.info('Post liked successfully');
+
   const receiverSocketId = getReceiverSocketId(postToLike.authorId);
   if (receiverSocketId) {
     io.to(receiverSocketId).emit('notifications', notification);
@@ -113,7 +129,9 @@ const likePostById = async (postId, user) => {
   return updatedPost;
 };
 
-const unlikePostById = async (postId, user) => {
+const unlikePostById = async (postId) => {
+  const user = getUser();
+
   const postToUnlike = await Post.findById(postId);
 
   if (!postToUnlike) {
@@ -127,15 +145,17 @@ const unlikePostById = async (postId, user) => {
   if (!postToUnlike.likedBy.includes(user._id)) {
     throw new AppError('You have not liked the post', 400);
   }
-  postToUnlike.likedBy = postToUnlike.likedBy.filter((likeId) => likeId != user._id);
 
-  // Optimistic concurrency enabled so this way of saving documents preserves data integrity
-  const updatedPost = await (
-    await postToUnlike.save()
+  const updatedPost = await Post.findOneAndUpdate(
+    { _id: postToUnlike._id }, // Filter to find the document
+    { $pull: { likedBy: user._id } },
+    { new: true }, // Update operation to push the new value into the array
   ).populate({
     path: 'authorId',
     select: ['username', 'profileImgUrl'],
   });
+
+  logger.info('Post unliked successfully');
   return updatedPost;
 };
 

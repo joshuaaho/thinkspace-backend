@@ -1,5 +1,5 @@
-import Joi from "joi";
-import validatetId from "./id.validation.js";
+import Joi from 'joi';
+import validatetId from './id.validation.js';
 
 const createChat = {
   body: Joi.object({

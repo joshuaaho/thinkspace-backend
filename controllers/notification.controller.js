@@ -1,4 +1,4 @@
-import { notificationService } from '../services/index.js';
+import notificationService from '#services/notification.service';
 
 const markAsRead = async (req, res, next) => {
   try {

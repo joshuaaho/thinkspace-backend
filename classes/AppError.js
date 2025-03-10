@@ -1,7 +1,14 @@
 class AppError extends Error {
-  constructor(message, statusCode) {
-    super(message);
+  constructor(err, statusCode) {
+    super(err);
     this.statusCode = statusCode;
+  }
+
+  toJSON() {
+    return {
+      err: this.message,
+      statusCode: this.statusCode,
+    };
   }
 }
 

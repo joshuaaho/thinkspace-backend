@@ -1,4 +1,4 @@
-import { messageService } from "../services/index.js";
+import messageService from '#services/message.service';
 
 const sendMessage = async (req, res, next) => {
   try {
@@ -17,7 +17,4 @@ const getMessages = async (req, res, next) => {
     next(err);
   }
 };
-export default {
-  sendMessage,
-  getMessages,
-};
+export default { sendMessage, getMessages };

@@ -1,8 +1,13 @@
-import { Comment, Post, Notification } from '../models/index.js';
-import AppError from '../classes/AppError.js';
-import { getReceiverSocketId, io } from '../socket/socket.js';
+import Comment from '#models/comment.model';
+import Post from '#models/post.model';
+import Notification from '#models/notification.model';
+import AppError from '#classes/AppError';
+import { getReceiverSocketId } from '../index.js';
+import { socketIOSingleton } from '#socket/socket-factory';
+import { getUser } from '#utils/context';
 
-const createComment = async (newCommentData, user) => {
+const createComment = async (newCommentData) => {
+  const user = getUser();
   const commentPost = await Post.findById(newCommentData.postId);
 
   if (!commentPost) {
@@ -45,13 +50,14 @@ const createComment = async (newCommentData, user) => {
   });
   const receiverSocketId = getReceiverSocketId(notificationToSend.to);
   if (receiverSocketId) {
-    io.to(receiverSocketId).emit('notifications', notification);
+    socketIOSingleton.to(receiverSocketId).emit('notifications', notification);
   }
 
   return newComment;
 };
 
-const updateCommentById = async (commentId, newContent, user) => {
+const updateCommentById = async (commentId, newContent) => {
+  const user = getUser();
   const commentToUpdate = await Comment.findById(commentId).populate('postId');
 
   if (!commentToUpdate) {
@@ -74,7 +80,8 @@ const updateCommentById = async (commentId, newContent, user) => {
   return updatedComment;
 };
 
-const deleteCommentById = async (commentId, user) => {
+const deleteCommentById = async (commentId) => {
+  const user = getUser();
   const commentToDelete = await Comment.findById(commentId);
 
   if (!commentToDelete) {
@@ -103,6 +110,12 @@ const deleteCommentById = async (commentId, user) => {
 
   await fetchComments(commentToDelete._id);
 
+  await Promise.all(
+    commentsToDelete.map(async (comment) => {
+      await Comment.deleteOne(comment);
+    }),
+  );
+
   return commentsToDelete;
 };
 const queryComments = async ({ postId, sort = 'postedAt', offset, limit }) => {
@@ -117,7 +130,8 @@ const queryComments = async ({ postId, sort = 'postedAt', offset, limit }) => {
   return filteredComments;
 };
 
-const likeCommentById = async (commentId, user) => {
+const likeCommentById = async (commentId) => {
+  const user = getUser();
   const commentToLike = await Comment.findById(commentId);
 
   if (!commentToLike) {
@@ -132,9 +146,10 @@ const likeCommentById = async (commentId, user) => {
     throw new AppError('You cannot like your own comment', 403);
   }
 
-  // Optimistic concurrency enabled so this way of saving documents preserves data integrity
-  const updatedComment = await (
-    await commentToLike.likedBy.push(user._id).save()
+  const updatedComment = await Comment.findOneAndUpdate(
+    { _id: commentToLike._id }, // Filter to find the document
+    { $push: { likedBy: user._id } },
+    { new: true }, // Update operation to push the new value into the array
   ).populate({
     path: 'authorId',
     select: ['username', 'profileImgUrl'],
@@ -154,13 +169,14 @@ const likeCommentById = async (commentId, user) => {
 
   const receiverSocketId = getReceiverSocketId(commentToLike.authorId);
   if (receiverSocketId) {
-    io.to(receiverSocketId).emit('notifications', notification);
+    socketIOSingleton.to(receiverSocketId).emit('notifications', notification);
   }
 
   return updatedComment;
 };
 
-const unlikeCommentById = async (commentId, user) => {
+const unlikeCommentById = async (commentId) => {
+  const user = getUser();
   const commentToUnlike = await Comment.findById(commentId);
 
   if (!commentToUnlike) {
@@ -177,9 +193,10 @@ const unlikeCommentById = async (commentId, user) => {
 
   commentToUnlike.likedBy = commentToUnlike.likedBy.filter((likeId) => likeId != user._id);
 
-  // Optimistic concurrency enabled so this way of saving documents preserves data integrity
-  const updatedComment = await (
-    await commentToUnlike.save()
+  const updatedComment = await Comment.findOneAndUpdate(
+    { _id: commentToUnlike._id }, // Filter to find the document
+    { $pull: { likedBy: user._id } },
+    { new: true }, // Update operation to push the new value into the array
   ).populate({
     path: 'authorId',
     select: ['username', 'profileImgUrl'],

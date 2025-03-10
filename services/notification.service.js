@@ -1,6 +1,9 @@
-import { Notification } from '../models/index.js';
-import AppError from '../classes/AppError.js';
-const markAsRead = async (notificationId, user) => {
+import Notification from '#models/notification.model';
+import AppError from '#classes/AppError';
+import logger from '#utils/logger';
+import { getUser } from '#utils/context';
+const markAsRead = async (notificationId) => {
+  const user = getUser();
   const notification = await Notification.findById(notificationId);
   if (!notification) {
     throw new AppError('Notification not found', 404);
@@ -17,6 +20,7 @@ const markAsRead = async (notificationId, user) => {
     select: 'profileImgUrl username',
   });
 
+  logger.info('Notification marked as read');
   return updatedNotification;
 };
 

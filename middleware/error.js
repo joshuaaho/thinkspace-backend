@@ -1,13 +1,15 @@
 import mongoose from 'mongoose';
-import AppError from '../classes/AppError.js';
+import AppError from '#classes/AppError';
 import 'dotenv/config';
-
+import logger from '#utils/logger';
 function errorHandler(err, req, res, next) {
-  if (process.env.NODE_ENV == 'development') {
-    return res.status(err.statusCode || 500).json(err.stack);
-  }
+  try {
+    logger.error(err);
 
-  if (process.env.NODE_ENV == 'production') {
+    if (process.env.ERROR_VERBOSE == "true") {
+      return res.status(err.statusCode || 500).json(err.stack);
+    }
+
     if (err.isJoi) {
       return res.status(400).json('Invalid Input Format. Please Retry With Valid Inputs');
     }
@@ -25,9 +27,9 @@ function errorHandler(err, req, res, next) {
     }
 
     return res.status(500).json('Internal Server Error. Please Try Again Or Wait Until Problem Is Solved');
+  } catch {
+    next(err);
   }
-
-  next(err);
 }
 
 export default errorHandler;
