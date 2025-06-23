@@ -1,50 +1,66 @@
-import { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
-import CreatePost, { CreatePostCommand } from "@application/useCases/posts/create";
 import CONSTANTS from "@containers/constants";
 import { z } from "zod";
 import { ToZodSchema } from "@zod";
-import { ValidationError } from "@domain/errors";
-import { AuthenticatedRequest } from "@presentation/middleware/auth";
+import {
+  Body,
+  Request,
+  Controller,
+  Middlewares,
+  SuccessResponse,
+  Response,
+} from "tsoa";
+import {
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+  NextFunction as ExpressNextFunction,
+} from "express";
+import CreatePostUseCase, {
+  CreatePostCommand,
+} from "@application/useCases/posts/create";
+import { HTTPError } from "@presentation/middleware/errorHandler";
+
+async function customMiddleware(
+  req: ExpressRequest,
+  res: ExpressResponse,
+  next: ExpressNextFunction
+) {
+  const schema = z.object({
+    title: z.string(),
+    content: z.string(),
+    tags: z.array(z.string()).optional(),
+    imgUrls: z.array(z.string()).optional(),
+  } satisfies ToZodSchema<CreatePostCommand>);
+
+  const validationResult = schema.safeParse(req.body);
+
+  if (!validationResult.success) {
+    throw validationResult.error;
+  }
+  next();
+}
 
 @injectable()
-class CreatePostController {
-  private createPostUseCase: CreatePost;
+class CreatePostController extends Controller {
+  private createPostUseCase: CreatePostUseCase;
 
-  constructor(@inject(CONSTANTS.CreatePostUseCase) createPostUseCase: CreatePost) {
+  constructor(
+    @inject(CONSTANTS.CreatePostUseCase) createPostUseCase: CreatePostUseCase
+  ) {
+    super();
     this.createPostUseCase = createPostUseCase;
   }
+  @Middlewares(customMiddleware)
+  @Response<HTTPError>(422, "Validation Failed")
+  @SuccessResponse("201", "Created") // Custom success response
+  async createPost(@Request() req: any, @Body() body: CreatePostCommand) {
+    const result = await this.createPostUseCase.execute(body, req.user);
 
-  async createPost(req: Request, res: Response, next: NextFunction) {
-    try {
-      const schema = z.object({
-        title: z.string(),
-        content: z.string(),
-        tags: z.array(z.string()).optional(),
-        imgUrls: z.array(z.string()).optional(),
-      } satisfies ToZodSchema<CreatePostCommand>);
-
-      const validationResult = schema.safeParse(req.body);
-
-      if (!validationResult.success) {
-        return res.status(400).json({ error: "Invalid HTTP request" });
-      }
-
-      const result = await this.createPostUseCase.execute(
-        validationResult.data,
-        (req as AuthenticatedRequest).requestor
-      );
-
-      if (result.isErr()) {
-        if (result.error instanceof ValidationError) {
-          return res.status(400).json({ error: result.error.message });
-        }
-      }
-
-      return res.status(201).json(result.unwrap());
-    } catch (error) {
-      next(error);
+    if (result.isErr()) {
+      throw result.error;
     }
+
+    return result.unwrap();
   }
 }
 

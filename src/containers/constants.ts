@@ -1,49 +1,48 @@
-const CONTROLLER_CONSTANTS = {
-  // Auth Controllers
-  LoginController: Symbol.for("LoginController"),
-  RegisterController: Symbol.for("RegisterController"),
-  LogoutController: Symbol.for("LogoutController"),
-  RefreshController: Symbol.for("RefreshController"),
+// const CONTROLLER_CONSTANTS = {
+//   // Auth Controllers
+//   LoginController: Symbol.for("LoginController"),
+//   RegisterController: Symbol.for("RegisterController"),
+//   LogoutController: Symbol.for("LogoutController"),
+//   RefreshController: Symbol.for("RefreshController"),
 
-  // User Controllers
-  GetMeController: Symbol.for("GetMeController"), 
-  GetUserByIdController: Symbol.for("GetUserByIdController"),
-  EditUserController: Symbol.for("EditUserController"),
-  FollowUserController: Symbol.for("FollowUserController"),
-  UnfollowUserController: Symbol.for("UnfollowUserController"),
-  QueryUsersController: Symbol.for("QueryUsersController"),
+//   // User Controllers
+//   GetMeController: Symbol.for("GetMeController"),
+//   GetUserByIdController: Symbol.for("GetUserByIdController"),
+//   EditUserController: Symbol.for("EditUserController"),
+//   FollowUserController: Symbol.for("FollowUserController"),
+//   UnfollowUserController: Symbol.for("UnfollowUserController"),
+//   QueryUsersController: Symbol.for("QueryUsersController"),
 
-  // Post Controllers
-  QueryPostsController: Symbol.for("QueryPostController"),
-  CreatePostController: Symbol.for("CreatePostController"),
-  DeletePostController: Symbol.for("DeletePostController"),
-  EditPostController: Symbol.for("EditPostController"),
-  LikePostController: Symbol.for("LikePostController"),
-  UnlikePostController: Symbol.for("UnlikePostController"),
-  GetPostByIdController: Symbol.for("GetPostByIdController"),
+//   // Post Controllers
+//   QueryPostsController: Symbol.for("QueryPostController"),
+//   CreatePostController: Symbol.for("CreatePostController"),
+//   DeletePostController: Symbol.for("DeletePostController"),
+//   EditPostController: Symbol.for("EditPostController"),
+//   LikePostController: Symbol.for("LikePostController"),
+//   UnlikePostController: Symbol.for("UnlikePostController"),
+//   GetPostByIdController: Symbol.for("GetPostByIdController"),
 
-  // Comment Controllers
-  CreateCommentController: Symbol.for("CreateCommentController"),
-  EditCommentController: Symbol.for("EditCommentController"),
-  DeleteCommentController: Symbol.for("DeleteCommentController"),
-  LikeCommentController: Symbol.for("LikeCommentController"),
-  UnlikeCommentController: Symbol.for("UnlikeCommentController"),
-  QueryCommentsController: Symbol.for("QueryCommentsController"),
+//   // Comment Controllers
+//   CreateCommentController: Symbol.for("CreateCommentController"),
+//   EditCommentController: Symbol.for("EditCommentController"),
+//   DeleteCommentController: Symbol.for("DeleteCommentController"),
+//   LikeCommentController: Symbol.for("LikeCommentController"),
+//   UnlikeCommentController: Symbol.for("UnlikeCommentController"),
+//   QueryCommentsController: Symbol.for("QueryCommentsController"),
 
-  // Message Controllers
-  CreateMessageController: Symbol.for("CreateMessageController"),
-  QueryMessagesController: Symbol.for("QueryMessagesController"),
-  GetChatListController: Symbol.for("GetChatListController"),
+//   // Message Controllers
+//   CreateMessageController: Symbol.for("CreateMessageController"),
+//   QueryMessagesController: Symbol.for("QueryMessagesController"),
+//   GetChatListController: Symbol.for("GetChatListController"),
 
-  // Notification Controllers
-  QueryNotificationsController: Symbol.for("QueryNotificationsController"),
-  GetUnreadCountController: Symbol.for("GetUnreadCountController"),
-  MarkAsReadController: Symbol.for("MarkAsReadController"),
+//   // Notification Controllers
+//   QueryNotificationsController: Symbol.for("QueryNotificationsController"),
+//   GetUnreadCountController: Symbol.for("GetUnreadCountController"),
+//   MarkAsReadController: Symbol.for("MarkAsReadController"),
 
-  // File Upload Controllers
-  CreateFileUploadUrlController: Symbol.for("CreateFileUploadUrlController"),
-}; 
-
+//   // File Upload Controllers
+//   CreateFileUploadUrlController: Symbol.for("CreateFileUploadUrlController"),
+// };
 
 const REPOSITORY_CONSTANTS = {
   UserRepository: Symbol.for("UserRepository"),
@@ -51,8 +50,7 @@ const REPOSITORY_CONSTANTS = {
   CommentRepository: Symbol.for("CommentRepository"),
   NotificationRepository: Symbol.for("NotificationRepository"),
   MessageRepository: Symbol.for("MessageRepository"),
-}; 
-
+};
 
 const USE_CASE_CONSTANTS = {
   // Auth Use Cases
@@ -98,8 +96,7 @@ const USE_CASE_CONSTANTS = {
 
   // File Upload Use Cases
   CreateFileUploadUrlUseCase: Symbol.for("CreateFileUploadUrlUseCase"),
-}; 
-
+};
 
 export const SUBSCRIPTION_CONSTANTS = {
   // Auth Use Cases
@@ -108,11 +105,17 @@ export const SUBSCRIPTION_CONSTANTS = {
   NotifyPostAuthorOnPostLiked: Symbol.for("NotifyPostAuthorOnPostLiked"),
   NotifyReceiverOnMessageCreated: Symbol.for("NotifyReceiverOnMessageCreated"),
   NotifyFollowerOnPostCreated: Symbol.for("NotifyFollowerOnPostCreated"),
-  NotifyPostAuthorOnCommentCreated: Symbol.for("NotifyPostAuthorOnCommentCreated"),
+  NotifyPostAuthorOnCommentCreated: Symbol.for(
+    "NotifyPostAuthorOnCommentCreated"
+  ),
   SendMessageOnMessageCreated: Symbol.for("SendMessageOnMessageCreated"),
-  NotifyCommentAuthorOnCommentCreated: Symbol.for("NotifyCommentAuthorOnCommentCreated"),
-  NotifyCommentAuthorOnCommentLiked: Symbol.for("NotifyCommentAuthorOnCommentLiked"),
-}
+  NotifyCommentAuthorOnCommentCreated: Symbol.for(
+    "NotifyCommentAuthorOnCommentCreated"
+  ),
+  NotifyCommentAuthorOnCommentLiked: Symbol.for(
+    "NotifyCommentAuthorOnCommentLiked"
+  ),
+};
 
 const SERVICE_CONSTANTS = {
   AuthService: Symbol.for("AuthService"),
@@ -125,9 +128,7 @@ const MIDDLEWARE_CONSTANTS = {
   AuthMiddleware: Symbol.for("AuthMiddleware"),
 };
 
-
 const CONSTANTS = {
-  ...CONTROLLER_CONSTANTS,
   ...REPOSITORY_CONSTANTS,
   ...USE_CASE_CONSTANTS,
   ...SUBSCRIPTION_CONSTANTS,
@@ -136,4 +137,3 @@ const CONSTANTS = {
 };
 
 export default CONSTANTS;
-  

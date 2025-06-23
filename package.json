@@ -5,9 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "nodemon dist/index.js",
-    "build": "tsc && tsc-alias",
-    "build:watch": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
-    "test:coverage": "vitest run --coverage",
+    "build": "tsoa spec-and-routes && tsc ",
+     "dev": "concurrently \"nodemon\" \"nodemon -x tsoa spec-and-routes\"",
     "test:ui": "vitest --ui --open",
     "test:e2e": "vitest run --ui --config ./vitest.config.ts",
     "test:application": "vitest watch --ui --project application",

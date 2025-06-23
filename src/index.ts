@@ -2,11 +2,13 @@ import express from "express";
 import { initializeSubscriptions } from "@application/subscriptions/initializeSubscriptions";
 import cors from "cors";
 import { createServer } from "http";
-import routes from "@presentation/routes/router";
+
 import startSocketServer from "@infrastructure/socket";
 import "dotenv/config";
 import cookieParser from "cookie-parser";
-import filesRouter from "@presentation/routes/files/router";
+import { RegisterRoutes } from "./routesBuild/routes";
+import { ValidationService } from "tsoa";
+import errorHandler from "@presentation/middleware/errorHandler";
 const PORT = process.env.BACKEND_SERVER_PORT || 4000;
 
 const app = express();
@@ -22,22 +24,32 @@ const httpServer = createServer(app);
 
 app.use(express.json());
 app.use(cookieParser());
-app.use((req, res, next) => {
-  next();
-});
-app.use(routes);
+
+ValidationService.prototype.ValidateParam = (
+  property,
+  rawValue,
+  name = "",
+  fieldErrors,
+  parent,
+  minimalSwaggerConfig
+) => rawValue;
+
+RegisterRoutes.prototype.getValidatedArgs = (
+  args: any,
+  request: any,
+  response: any
+) => Object.keys(args);
+
+RegisterRoutes(app);
+
+initializeSubscriptions();
+startSocketServer(httpServer);
 
 app.use((req, res, next) => {
   res.status(408).send("Unknown Route");
 });
 
-app.use((err: any, req: any, res: any, next: any) => {
-  console.log(err);
-  res.status(500).send("Something broke!");
-});
-
-initializeSubscriptions();
-startSocketServer(httpServer);
+app.use(errorHandler);
 
 httpServer.listen(PORT, () => {
   console.log("Listening to: ", PORT);

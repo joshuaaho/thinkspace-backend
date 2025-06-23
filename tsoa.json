@@ -1,0 +1,22 @@
+{
+  "entryFile": "src/index.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": ["src/presentation/controllers/**/*.ts"],
+  "spec": {
+    "outputDirectory": "docs",
+    "specVersion": 3,
+    "securityDefinitions": {
+      "api_key": {
+        "type": "apiKey",
+        "name": "access_token",
+        "in": "query"
+      }
+    
+    }
+  },
+  "routes": {
+    "routesDir": "routesBuild",
+    "iocModule": "src/containers",
+    "authenticationModule": "src/middleware/auth"
+  }
+}
