@@ -1,4 +1,4 @@
-# Pull Request Request for Thinkspace
+
 
 ## Project Overview
 **Thinkspace** is a social media site developed using Node.js, Express, TypeScript, Inversify, and more. The project applies Clean Architecture and Domain-Driven Design (DDD) principles. The entire project was self-taught and took approximately one year to complete.
