@@ -1,11 +1,11 @@
-
-
 ## Project Overview
+
 **Thinkspace** is a social media site developed using Node.js, Express, TypeScript, Inversify, and more. The project applies Clean Architecture and Domain-Driven Design (DDD) principles. The entire project was self-taught and took approximately one year to complete.
 
 For the frontend, please check out the [thinkspace-frontend repository](https://github.com/joshuaaho/thinkspace-frontend)..
 
 ## Key Features
+
 - **Posts**: Create, Read, Update, and Delete (CRUD) functionality for posts.
 - **Comments & Replies**: Full CRUD capabilities for comments and replies.
 - **Real-Time Messages and Notifications** (Socket.IO):
@@ -20,8 +20,6 @@ For the frontend, please check out the [thinkspace-frontend repository](https://
   - User information e.g. Bio, Education...
 - **Image Uploading**: Integration with AWS S3 for image uploads.
 - **User Filtering**: Filter users by username.
-- **Post Filtering**: 
+- **Post Filtering**:
   - Filter posts by title or tags.
   - Sort posts by newest, oldest, or number of likes.
-    
-
