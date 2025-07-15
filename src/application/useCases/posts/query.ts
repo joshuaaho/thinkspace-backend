@@ -1,18 +1,17 @@
-import { Err, Ok, Result } from "ts-results-es";
 import IPostRepository from "@domain/repositories/IPostRepository";
 import IUserRepository from "@domain/repositories/IUserRepository";
 import { inject, injectable } from "inversify";
 import CONSTANTS from "@containers/constants";
-import { SortBy } from "@domain/repositories/IPostRepository";
+import { SortBy } from "@domain/repositories/types";
 
-export type QueryPostsCommand = {
-  offset: number;
-  limit: number;
-  tags: string[];
-  sortBy: SortBy;
-  title: string;
-  authorId: string;
-};
+export interface QueryPostsCommand {
+  offset?: number;
+  limit?: number;
+  tags?: string[];
+  sortBy?: SortBy;
+  title?: string;
+  authorId?: string;
+}
 
 export type QueryPostsResponse = {
   authorId: string;
@@ -34,7 +33,7 @@ class QueryPostsUseCase {
   private userRepo: IUserRepository;
   constructor(
     @inject(CONSTANTS.PostRepository) postRepo: IPostRepository,
-    @inject(CONSTANTS.UserRepository) userRepo: IUserRepository
+    @inject(CONSTANTS.UserRepository) userRepo: IUserRepository,
   ) {
     this.postRepo = postRepo;
     this.userRepo = userRepo;
@@ -47,7 +46,7 @@ class QueryPostsUseCase {
     offset,
     limit,
     authorId,
-  }: Partial<QueryPostsCommand>): Promise<QueryPostsResponse> {
+  }: QueryPostsCommand): Promise<QueryPostsResponse> {
     const posts = await this.postRepo.query({
       tags,
       sortBy,
@@ -76,7 +75,7 @@ class QueryPostsUseCase {
           imgUrls: post.imgUrls.map((imgUrl) => imgUrl.value),
           commentedBy: post.commentedBy.map((userId) => userId.value),
         };
-      })
+      }),
     );
 
     return queryPostsResponse;

@@ -25,7 +25,7 @@ class MongoNotificationMapper implements IDataMapper<Notification> {
       isRead: dalEntity.isRead,
       resourceId: dalEntity.resourceId,
       redirectToResourceType: dalEntity.redirectToResourceType,
-      createdAt: new Date(dalEntity.createdAt)
+      createdAt: new Date(dalEntity.createdAt),
     });
   }
 
@@ -38,9 +38,9 @@ class MongoNotificationMapper implements IDataMapper<Notification> {
       isRead: entity.isRead,
       resourceId: entity.resourceId,
       redirectToResourceType: entity.redirectToResourceType,
-      createdAt: entity.createdAt.toString()
+      createdAt: entity.createdAt.toString(),
     };
   }
 }
 
-export default MongoNotificationMapper; 
+export default MongoNotificationMapper;

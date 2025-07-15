@@ -1,5 +1,3 @@
-
-
 export type SendMessageDto = {
   id: string;
   username: string;
@@ -10,9 +8,8 @@ export type SendMessageDto = {
   isFromCurrentUser: boolean;
 };
 
- interface IMessageService {
-  sendMessage(message: SendMessageDto,receiverId: string): void;
-
+interface IMessageService {
+  sendMessage(message: SendMessageDto, receiverId: string): void;
 }
 
 export default IMessageService;

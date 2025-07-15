@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import request from "supertest";
 import app from "@index";
-import container from "@containers/index";
+import { iocContainer } from "@containers/index";
 import IUserRepository from "@domain/repositories/IUserRepository";
 import IPostRepository from "@domain/repositories/IPostRepository";
 import ICommentRepository from "@domain/repositories/ICommentRepository";
@@ -23,11 +23,11 @@ describe("Create Comment Route", () => {
     };
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
-      const postRepository = container.get<IPostRepository>(
-        CONSTANTS.PostRepository
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
       );
 
       await userRepository.save(testUser);
@@ -52,8 +52,8 @@ describe("Create Comment Route", () => {
     it("should create comment in database", async () => {
       await initializeData();
       await sendRequest();
-      const commentRepository = container.get<ICommentRepository>(
-        CONSTANTS.CommentRepository
+      const commentRepository = iocContainer.get<ICommentRepository>(
+        CONSTANTS.CommentRepository,
       );
       const comments = await commentRepository.query({
         postId: testPost.id.value,
@@ -73,14 +73,14 @@ describe("Create Comment Route", () => {
     };
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
-      const postRepository = container.get<IPostRepository>(
-        CONSTANTS.PostRepository
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
       );
-      const commentRepository = container.get<ICommentRepository>(
-        CONSTANTS.CommentRepository
+      const commentRepository = iocContainer.get<ICommentRepository>(
+        CONSTANTS.CommentRepository,
       );
 
       await userRepository.save(testUser);
@@ -106,8 +106,8 @@ describe("Create Comment Route", () => {
     it("should create reply in database", async () => {
       await initializeData();
       await sendRequest();
-      const commentRepository = container.get<ICommentRepository>(
-        CONSTANTS.CommentRepository
+      const commentRepository = iocContainer.get<ICommentRepository>(
+        CONSTANTS.CommentRepository,
       );
       const comments = await commentRepository.query({
         postId: testPost.id.value,
@@ -126,6 +126,7 @@ describe("Create Comment Route", () => {
 
     it("should return 401 status code", async () => {
       const response = await sendRequest();
+
       expect(response.status).toBe(401);
     });
   });
@@ -134,8 +135,8 @@ describe("Create Comment Route", () => {
     const testUser = createUserOne();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
       await userRepository.save(testUser);
     }
@@ -164,11 +165,11 @@ describe("Create Comment Route", () => {
     const testPost = createPostOne();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
-      const postRepository = container.get<IPostRepository>(
-        CONSTANTS.PostRepository
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
       );
 
       await userRepository.save(testUser);
@@ -200,11 +201,11 @@ describe("Create Comment Route", () => {
     const testPost = createPostOne();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
-      const postRepository = container.get<IPostRepository>(
-        CONSTANTS.PostRepository
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
       );
 
       await userRepository.save(testUser);
@@ -219,7 +220,7 @@ describe("Create Comment Route", () => {
         .set("Authorization", `Bearer ${accessToken}`)
         .send({
           postId: testPost.id.value,
-          content: "", // Empty content
+          content: "",
         });
     }
 
@@ -232,8 +233,8 @@ describe("Create Comment Route", () => {
     it("should not create comment in database", async () => {
       await initializeData();
       await sendRequest();
-      const commentRepository = container.get<ICommentRepository>(
-        CONSTANTS.CommentRepository
+      const commentRepository = iocContainer.get<ICommentRepository>(
+        CONSTANTS.CommentRepository,
       );
       const comments = await commentRepository.query({
         postId: testPost.id.value,

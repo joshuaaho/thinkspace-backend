@@ -23,7 +23,7 @@ describe("Notify Follower On Post Created", async () => {
   const handler = new NotifyFollowerOnPostCreated(
     mockUserRepo,
     mockNotificationService,
-    mockNotificationRepo
+    mockNotificationRepo,
   );
 
   await handler.onPostCreated(new PostCreated(post));
@@ -34,7 +34,7 @@ describe("Notify Follower On Post Created", async () => {
 
   it("should send the notification to all followers (2 in total)", () => {
     expect(
-      mockNotificationService.sendNotifications.mock.calls[0][0]
+      mockNotificationService.sendNotifications.mock.calls[0][0],
     ).toHaveLength(2);
   });
 });

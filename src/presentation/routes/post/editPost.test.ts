@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import request from "supertest";
 import app from "@index";
-import container from "@containers/index";
+import { iocContainer } from "@containers/index";
 import IUserRepository from "@domain/repositories/IUserRepository";
 import IPostRepository from "@domain/repositories/IPostRepository";
 import CONSTANTS from "@containers/constants";
@@ -19,8 +19,12 @@ describe("Edit Post Route", () => {
     const testUser = createUserOne();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(CONSTANTS.UserRepository);
-      const postRepository = container.get<IPostRepository>(CONSTANTS.PostRepository);
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
+      );
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
+      );
 
       await userRepository.save(testUser);
       await postRepository.save(testPost);
@@ -44,7 +48,9 @@ describe("Edit Post Route", () => {
     it("should update post in database", async () => {
       await initializeData();
       await sendRequest();
-      const postRepository = container.get<IPostRepository>(CONSTANTS.PostRepository);
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
+      );
       const posts = await postRepository.query({ title: postOneUpdates.title });
       expect(posts).toHaveLength(1);
     });
@@ -52,12 +58,10 @@ describe("Edit Post Route", () => {
 
   describe("when user is not authenticated", () => {
     async function sendRequest() {
-      return request(app)
-        .patch(`/posts/somepostid`)
-        .send({
-          title: "Updated Title",
-          content: "Updated content",
-        });
+      return request(app).patch(`/posts/somepostid`).send({
+        title: "Updated Title",
+        content: "Updated content",
+      });
     }
 
     it("should return 401 status code", async () => {
@@ -70,7 +74,9 @@ describe("Edit Post Route", () => {
     const testUser = createUserOne();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(CONSTANTS.UserRepository);
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
+      );
       await userRepository.save(testUser);
     }
 
@@ -98,8 +104,12 @@ describe("Edit Post Route", () => {
     const testUser = createUserTwo();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(CONSTANTS.UserRepository);
-      const postRepository = container.get<IPostRepository>(CONSTANTS.PostRepository);
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
+      );
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
+      );
 
       await userRepository.save(testUser);
       await postRepository.save(testPost);
@@ -129,8 +139,12 @@ describe("Edit Post Route", () => {
     const testUser = createUserOne();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(CONSTANTS.UserRepository);
-      const postRepository = container.get<IPostRepository>(CONSTANTS.PostRepository);
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
+      );
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
+      );
 
       await userRepository.save(testUser);
       await postRepository.save(testPost);
@@ -154,4 +168,4 @@ describe("Edit Post Route", () => {
       expect(response.status).toBe(400);
     });
   });
-}); 
+});

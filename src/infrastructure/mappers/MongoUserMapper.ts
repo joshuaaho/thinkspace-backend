@@ -1,4 +1,3 @@
-import { WithId } from "mongodb";
 import EntityId from "@domain/core/EntityId";
 import { IDataMapper } from "@domain/core/IMapper";
 import User from "@domain/entities/User";
@@ -30,12 +29,12 @@ export interface MongoUser {
 
 class MongoUserMapper implements IDataMapper<User> {
   toDomain(mongoUser: MongoUser): User {
-    const { 
-      id, 
-      username, 
-      email, 
-      password, 
-      refreshToken, 
+    const {
+      id,
+      username,
+      email,
+      password,
+      refreshToken,
       work,
       bio,
       education,
@@ -43,10 +42,9 @@ class MongoUserMapper implements IDataMapper<User> {
       location,
       profileImgUrl,
       themePreference,
-      followedBy 
+      followedBy,
     } = mongoUser;
 
-   
     const user = User.create({
       id: EntityId.create(id),
       username: Username.create(username).unwrap(),
@@ -58,9 +56,11 @@ class MongoUserMapper implements IDataMapper<User> {
       education: education ? Education.create(education).unwrap() : undefined,
       interest: interest ? Interest.create(interest).unwrap() : undefined,
       location: location ? Location.create(location).unwrap() : undefined,
-      profileImgUrl: profileImgUrl ? Url.create(profileImgUrl).unwrap() : undefined,
+      profileImgUrl: profileImgUrl
+        ? Url.create(profileImgUrl).unwrap()
+        : undefined,
       themePreference: themePreference,
-      followedBy: (followedBy || []).map(id => EntityId.create(id)),
+      followedBy: (followedBy || []).map((id) => EntityId.create(id)),
     });
 
     return user;
@@ -80,7 +80,7 @@ class MongoUserMapper implements IDataMapper<User> {
       location: user.location?.value,
       profileImgUrl: user.profileImgUrl?.value,
       themePreference: user.themePreference,
-      followedBy: user.followedBy.map(id => id.value),
+      followedBy: user.followedBy.map((id) => id.value),
     };
   }
 }

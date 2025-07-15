@@ -13,7 +13,6 @@ import { ValidationError } from "@domain/errors";
 import User from "@domain/entities/User";
 import IPostRepository from "@domain/repositories/IPostRepository";
 import CONSTANTS from "@containers/constants";
-import Post from "@domain/entities/Post";
 
 export type CreateCommentCommand = {
   content: string;
@@ -29,7 +28,7 @@ class CreateComment {
 
   constructor(
     @inject(CONSTANTS.CommentRepository) commentRepo: ICommentRepository,
-    @inject(CONSTANTS.PostRepository) postRepo: IPostRepository
+    @inject(CONSTANTS.PostRepository) postRepo: IPostRepository,
   ) {
     this.commentRepo = commentRepo;
 
@@ -38,18 +37,11 @@ class CreateComment {
 
   public async execute(
     request: CreateCommentCommand,
-    requestor: User
+    requestor: User,
   ): Promise<
-    Result<
-      void,
-      | ValidationError
-      | InvalidRequestError
-      | ResourceNotFoundError
-    >
+    Result<void, ValidationError | InvalidRequestError | ResourceNotFoundError>
   > {
-    let content: Content;
     let parentCommentId: EntityId | undefined;
-    let post: Post;
 
     const somePost = await this.postRepo.findById(request.postId);
 
@@ -57,18 +49,18 @@ class CreateComment {
       return Err(new ResourceNotFoundError("Post not found"));
     }
 
-    post = somePost.value;
+    const post = somePost.value;
 
     const contentOrError = Content.create(request.content);
     if (contentOrError.isErr()) {
       return contentOrError;
     }
 
-    content = contentOrError.value;
+    const content = contentOrError.value;
 
     if (request.parentCommentId) {
       const someParentComment = await this.commentRepo.findById(
-        request.parentCommentId
+        request.parentCommentId,
       );
       if (someParentComment.isNone()) {
         return Err(new ResourceNotFoundError("Parent comment not found"));
@@ -76,7 +68,7 @@ class CreateComment {
 
       if (!someParentComment.value.postId.equals(post.id)) {
         return Err(
-          new InvalidRequestError("Parent comment is not from the same post")
+          new InvalidRequestError("Parent comment is not from the same post"),
         );
       }
       parentCommentId = EntityId.create(request.parentCommentId);

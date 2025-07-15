@@ -1,47 +1,39 @@
-import { Request, Response, NextFunction } from "express";
-import { injectable, inject } from "inversify";
+import { Request } from "express";
 import IAuthService from "@application/services/IAuthService";
 import CONSTANTS from "@containers/constants";
 import IUserRepository from "@domain/repositories/IUserRepository";
 import User from "@domain/entities/User";
-
+import { iocContainer } from "@containers/index";
+import { UnauthenticatedError } from "@application/useCases/errors";
 export interface AuthenticatedRequest extends Request {
-  requestor: User;
+  user: User;
 }
 
-@injectable()
-export class AuthMiddleware {
-  private authService: IAuthService;
-  private userRepo: IUserRepository;
+const authService = iocContainer.get<IAuthService>(CONSTANTS.AuthService);
+const userRepo = iocContainer.get<IUserRepository>(CONSTANTS.UserRepository);
 
-  constructor(
-    @inject(CONSTANTS.AuthService) authService: IAuthService,
-    @inject(CONSTANTS.UserRepository) userRepo: IUserRepository
-  ) {
-    this.authService = authService;
-    this.userRepo = userRepo;
+export async function expressAuthentication(
+  request: Request,
+  _securityName: string,
+  _scopes?: string[],
+): Promise<any> {
+  const authHeader = request.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return Promise.reject(new UnauthenticatedError("Access token is required"));
   }
 
-  authenticate = async (req: Request, res: Response, next: NextFunction) => {
-    const authHeader = req.headers.authorization;
+  const token = authHeader.split(" ")[1];
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "No token provided" });
-    }
+  const payload = authService.verifyAccessToken(token);
 
-    const token = authHeader.split(" ")[1];
+  if (payload.isErr()) {
+    return Promise.reject(payload.error);
+  }
 
-    const payload = this.authService.verifyAccessToken(token);
-
-    if (payload.isErr()) {
-      return res.status(401).json({ error: payload.error.message });
-    }
-    
-    const user = await this.userRepo.findById(payload.value.userId);
-    if (user.isNone()) {
-      return res.status(401).json({ error: "User not fougnd" });
-    }
-    (req as AuthenticatedRequest).requestor = user.value;
-    next();
-  };
+  const user = await userRepo.findById(payload.value.userId);
+  if (user.isNone()) {
+    return Promise.reject(new UnauthenticatedError("User not found"));
+  }
+  return Promise.resolve(user.value);
 }

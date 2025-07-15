@@ -1,7 +1,7 @@
-import { Result, Ok, Err } from 'ts-results-es';
-import * as EmailValidator from 'email-validator';
-import ValueObject from '../../../core/BaseValueObject';
-import { ValidationError }   from '@domain/errors';
+import { Result, Ok, Err } from "ts-results-es";
+import * as EmailValidator from "email-validator";
+import ValueObject from "../../../core/BaseValueObject";
+import { ValidationError } from "@domain/errors";
 
 class Email extends ValueObject {
   private readonly _value: string;

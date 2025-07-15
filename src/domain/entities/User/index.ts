@@ -17,8 +17,8 @@ import Location from "./Location";
 function getRandomProfileImage(): string {
   const profileImages = [
     "https://thinkspace1506.s3.us-east-1.amazonaws.com/70865fc6-d842-4993-9f80-de1223d40987.jpg",
-    "https://thinkspace1506.s3.us-east-1.amazonaws.com/165e8069-2728-482b-a939-462a8c24af66.jpg"
-  ]
+    "https://thinkspace1506.s3.us-east-1.amazonaws.com/165e8069-2728-482b-a939-462a8c24af66.jpg",
+  ];
 
   const randomIndex = Math.floor(Math.random() * profileImages.length);
   return profileImages[randomIndex];
@@ -39,7 +39,6 @@ interface UserProps {
   themePreference?: ThemePreference;
   followedBy?: EntityId[];
 }
-
 
 export type ThemePreference = "light" | "dark" | "system";
 export class User extends BaseEntity {
@@ -68,8 +67,7 @@ export class User extends BaseEntity {
     this._interest = props.interest;
     this._location = props.location;
     this._profileImgUrl =
-      props.profileImgUrl ||
-      Url.create(getRandomProfileImage()).unwrap();
+      props.profileImgUrl || Url.create(getRandomProfileImage()).unwrap();
     this._themePreference = props.themePreference || "light";
     this._followedBy = props.followedBy || [];
   }
@@ -79,11 +77,11 @@ export class User extends BaseEntity {
   }
 
   public get username() {
-    return this._username
+    return this._username;
   }
 
   public get email() {
-    return this._email
+    return this._email;
   }
 
   public get password() {
@@ -127,10 +125,12 @@ export class User extends BaseEntity {
   }
 
   public isFollowedBy(userId: EntityId): boolean {
-    return this._followedBy.some(followerId => followerId.equals(userId));
+    return this._followedBy.some((followerId) => followerId.equals(userId));
   }
 
-  public acceptFollowFromUser(userId: EntityId): Result<void, InvalidRequestError> {
+  public acceptFollowFromUser(
+    userId: EntityId,
+  ): Result<void, InvalidRequestError> {
     // Cannot follow yourself
     if (userId.equals(this.id)) {
       return Err(new InvalidRequestError("Cannot follow yourself"));
@@ -153,7 +153,9 @@ export class User extends BaseEntity {
     }
 
     // Remove follower
-    this._followedBy = this._followedBy.filter(followerId => !followerId.equals(userId));
+    this._followedBy = this._followedBy.filter(
+      (followerId) => !followerId.equals(userId),
+    );
     return Ok.EMPTY;
   }
 
@@ -165,7 +167,18 @@ export class User extends BaseEntity {
     this._refreshToken = refreshToken;
   }
 
-  public updateProfileInfo(props: Pick<UserProps, "work" | "bio" | "education" | "interest" | "location" | "profileImgUrl" | "themePreference">) {
+  public updateProfileInfo(
+    props: Pick<
+      UserProps,
+      | "work"
+      | "bio"
+      | "education"
+      | "interest"
+      | "location"
+      | "profileImgUrl"
+      | "themePreference"
+    >,
+  ) {
     this._work = props.work;
     this._bio = props.bio;
     this._education = props.education;

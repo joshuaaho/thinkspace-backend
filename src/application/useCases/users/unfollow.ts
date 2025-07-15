@@ -3,7 +3,10 @@ import CONSTANTS from "@containers/constants";
 import IUserRepository from "@domain/repositories/IUserRepository";
 import User from "@domain/entities/User";
 import { Result, Ok, Err } from "ts-results-es";
-import { ResourceNotFoundError, InvalidRequestError } from "@application/useCases/errors";
+import {
+  ResourceNotFoundError,
+  InvalidRequestError,
+} from "@application/useCases/errors";
 
 export type UnfollowCommand = {
   userId: string;
@@ -13,19 +16,23 @@ export type UnfollowCommand = {
 class Unfollow {
   private userRepo: IUserRepository;
 
-  constructor(
-    @inject(CONSTANTS.UserRepository) userRepo: IUserRepository
-  ) {
+  constructor(@inject(CONSTANTS.UserRepository) userRepo: IUserRepository) {
     this.userRepo = userRepo;
   }
 
   public async execute(
     command: UnfollowCommand,
-    requestor: User
+    requestor: User,
   ): Promise<Result<void, ResourceNotFoundError | InvalidRequestError>> {
-    const userToUnfollow = (await this.userRepo.findById(command.userId)).unwrap();
+    const userToUnfollowOption = await this.userRepo.findById(command.userId);
+
+    if (userToUnfollowOption.isNone()) {
+      return Err(new ResourceNotFoundError("User to unfollow not found"));
+    }
+
+    const userToUnfollow = userToUnfollowOption.value;
     const result = userToUnfollow.removeFollower(requestor.id);
-    
+
     if (result.isErr()) {
       return result;
     }
@@ -35,4 +42,4 @@ class Unfollow {
   }
 }
 
-export default Unfollow; 
+export default Unfollow;

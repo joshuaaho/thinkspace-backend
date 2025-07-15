@@ -1,62 +1,72 @@
-// import { NextFunction, Request, Response } from "express";
-// import { inject, injectable } from "inversify";
-// import CONSTANTS from "@containers/constants";
-// import { z } from "zod";
-// import { ToZodSchema } from "@zod";
-// import {
-//   ResourceNotFoundError,
-//   InvalidRequestError,
-// } from "@application/useCases/errors";
-// import { AuthenticatedRequest } from "@presentation/middleware/auth";
-// import Follow, { FollowCommand } from "@application/useCases/users/follow";
-// import IUserRepository from "@domain/repositories/IUserRepository";
+import { inject, injectable } from "inversify";
+import CONSTANTS from "@containers/constants";
+import { z } from "zod";
+import { ToZodSchema } from "@zod";
+import Follow, { FollowCommand } from "@application/useCases/users/follow";
+import {
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+  NextFunction as ExpressNextFunction,
+} from "express";
+import {
+  Controller,
+  Post,
+  Route,
+  Response,
+  SuccessResponse,
+  Security,
+  Request,
+  Path,
+  Middlewares,
+  Tags,
+} from "tsoa";
+import { HTTPError } from "@presentation/middleware/errorHandler";
+import { AuthenticatedRequest } from "@presentation/middleware/auth";
+async function customMiddleware(
+  req: ExpressRequest,
+  res: ExpressResponse,
+  next: ExpressNextFunction,
+) {
+  const schema = z.object({
+    userId: z.string().min(1, "User ID is required"),
+  } satisfies ToZodSchema<FollowCommand>);
 
-// @injectable()
-// class FollowController {
-//   private followUseCase: Follow;
-//   private userRepo: IUserRepository;
+  const validationResult = schema.safeParse({
+    userId: req.params.userId,
+  });
 
-//   constructor(
-//     @inject(CONSTANTS.FollowUserUseCase) followUseCase: Follow,
-//     @inject(CONSTANTS.UserRepository) userRepo: IUserRepository
-//   ) {
-//     this.followUseCase = followUseCase;
-//     this.userRepo = userRepo;
-//   }
+  if (!validationResult.success) {
+    return next(validationResult.error);
+  }
+  return next();
+}
 
-//   async handleFollow(req: Request, res: Response, next: NextFunction) {
-//     try {
-//       const schema = z.object({
-//         userId: z.string(),
-//       } satisfies ToZodSchema<FollowCommand>);
+@injectable()
+@Tags("Users")
+@Route("users")
+export class FollowController extends Controller {
+  private followUseCase: Follow;
 
-//       const validationResult = schema.safeParse({
-//         userId: req.params.userId,
-//       });
+  constructor(@inject(CONSTANTS.FollowUserUseCase) followUseCase: Follow) {
+    super();
+    this.followUseCase = followUseCase;
+  }
 
-//       if (!validationResult.success) {
-//         return res.status(400).json({ error: "Invalid request" });
-//       }
+  @Post("/{userId}/follow")
+  @Security("bearerAuth")
+  @Middlewares(customMiddleware)
+  @Response<HTTPError>(400, "Invalid Request or invalid HTTP request")
+  @Response<HTTPError>(401, "Unauthenticated")
+  @Response<HTTPError>(404, "User Not Found")
+  @SuccessResponse("201", "Successfully followed user")
+  async follow(@Path() userId: string, @Request() req: AuthenticatedRequest) {
+    const result = await this.followUseCase.execute({ userId }, req.user);
 
-//       const result = await this.followUseCase.execute(
-//         validationResult.data,
-//         (req as AuthenticatedRequest).requestor
-//       );
+    if (result.isErr()) {
+      throw result.error;
+    }
 
-//       if (result.isErr()) {
-//         if (result.error instanceof ResourceNotFoundError) {
-//           return res.status(404).json({ error: result.error.message });
-//         }
-//         if (result.error instanceof InvalidRequestError) {
-//           return res.status(400).json({ error: result.error.message });
-//         }
-//       }
-
-//       return res.status(201).json({ message: "Successfully followed user" });
-//     } catch (error) {
-//       next(error);
-//     }
-//   }
-// }
-
-// export default FollowController;
+    this.setStatus(201);
+    return;
+  }
+}

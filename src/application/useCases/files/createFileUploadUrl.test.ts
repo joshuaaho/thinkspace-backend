@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { None, Some } from "ts-results-es";
+import { Some } from "ts-results-es";
 import {
   createUserRepositoryMock,
   createFileUploadServiceMock,
 } from "@utils/testData/mocks";
-import { UnauthenticatedError } from "@application/useCases/errors";
+
 import { createUserOne } from "@utils/testData/testEntities";
 import CreateFileUploadUrlUseCase from "./createFileUploadUrl";
 
@@ -21,7 +21,6 @@ describe("Create File Upload URL Use Case", () => {
 
     const createFileUploadUrl = new CreateFileUploadUrlUseCase(
       mockFileUploadService,
- 
     );
 
     const result = await createFileUploadUrl.execute();
@@ -30,9 +29,7 @@ describe("Create File Upload URL Use Case", () => {
     });
 
     it("should return success with upload URL", () => {
-      expect(result).toBe(testUploadUrl);
+      expect(result).toEqual({ uploadUrl: testUploadUrl });
     });
   });
-
- 
 });

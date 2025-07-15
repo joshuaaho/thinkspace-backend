@@ -1,4 +1,3 @@
-import { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
 import Login, {
   LoginCommand,
@@ -6,49 +5,70 @@ import Login, {
 import CONSTANTS from "@containers/constants";
 import { z } from "zod";
 import { ToZodSchema } from "@zod";
+import {
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+  NextFunction as ExpressNextFunction,
+} from "express";
+import {
+  Body,
+  Controller,
+  Middlewares,
+  Post,
+  Route,
+  Response,
+  SuccessResponse,
+  Tags,
+} from "tsoa";
+import { HTTPError } from "@presentation/middleware/errorHandler";
 
+async function customMiddleware(
+  req: ExpressRequest,
+  res: ExpressResponse,
+  next: ExpressNextFunction,
+) {
+  const schema = z.object({
+    username: z.string(),
+    password: z.string(),
+  } satisfies ToZodSchema<LoginCommand>);
+
+  const validationResult = schema.safeParse(req.body);
+
+  if (!validationResult.success) {
+    return next(validationResult.error);
+  }
+  next();
+}
 @injectable()
-class LoginController {
+@Tags("Authentication")
+@Route("auth")
+export class LoginController extends Controller {
   private loginUseCase: Login;
   constructor(@inject(CONSTANTS.LoginUseCase) loginUseCase: Login) {
+    super();
     this.loginUseCase = loginUseCase;
   }
 
-  async login(req: Request, res: Response, next: NextFunction) {
-    try {
-      const body = req.body;
+  @Post("/login")
+  @Middlewares(customMiddleware)
+  @Response<HTTPError>(400, "invalid HTTP request")
+  @Response<HTTPError>(401, "Login Unsuccessful")
+  @SuccessResponse("201", "Created")
+  async login(@Body() body: LoginCommand) {
+    const data = await this.loginUseCase.execute(body);
 
-      const schema = z.object({
-        username: z.string(),
-        password: z.string(),
-      } satisfies ToZodSchema<LoginCommand>);
-
-      const result = schema.safeParse(body);
-
-      if (!result.success) {
-        return res.status(400).json({error: "Invalid HTTP request"});
-      }
-      const data = await this.loginUseCase.execute(result.data);
-
-      if (data.isErr()) {
-        return res.status(401).json({error: data.error.message});
-      }
-
-      const { accessToken, refreshToken } = data.value;
-
-      return res
-        .status(200)
-        .cookie("jwt", refreshToken, {
-          httpOnly: true,
-          sameSite: "lax",
-          secure: true,
-          maxAge: 24 * 60 * 60 * 1000,
-        })
-        .json({ accessToken });
-    } catch (error) {
-      next(error);
+    if (data.isErr()) {
+      throw data.error;
     }
+
+    const { accessToken, refreshToken } = data.value;
+
+    this.setStatus(200);
+    this.setHeader(
+      "Set-Cookie",
+      `jwt=${refreshToken}; HttpOnly; SameSite=None; Secure; Max-Age=24*60*60*1000`,
+    );
+
+    return { accessToken };
   }
 }
-
-export default LoginController;

@@ -4,7 +4,10 @@ import {
   createUserRepositoryMock,
   createJwtServiceMock,
 } from "@utils/testData/mocks";
-import { UnauthenticatedError } from "@application/useCases/errors";
+import {
+  UnauthenticatedError,
+  InvalidRequestError,
+} from "@application/useCases/errors";
 import { createUserOne } from "@utils/testData/testEntities";
 import RefreshUseCase from "@application/useCases/authentication/refresh";
 
@@ -20,7 +23,7 @@ describe("Refresh Use Case", () => {
       refreshToken: "invalid-refresh-token",
     });
     it("should return unauthenticated error", () => {
-      expect(result.unwrapErr()).toBeInstanceOf(UnauthenticatedError);
+      expect(result.unwrapErr()).toBeInstanceOf(InvalidRequestError);
     });
 
     it("should not create new tokens", () => {
@@ -35,7 +38,7 @@ describe("Refresh Use Case", () => {
 
     const mockJwtService = createJwtServiceMock();
     mockJwtService.verifyRefreshToken.mockReturnValue(
-      Err(new UnauthenticatedError("Invalid refresh token"))
+      Err(new UnauthenticatedError("Invalid refresh token")),
     );
 
     const refreshUseCase = new RefreshUseCase(mockUserRepo, mockJwtService);
@@ -57,7 +60,7 @@ describe("Refresh Use Case", () => {
     const mockJwtService = createJwtServiceMock();
     mockJwtService.createAccessToken.mockReturnValue("new-access-token");
     mockJwtService.verifyRefreshToken.mockReturnValue(
-      Ok({ userId: testUser.id.value })
+      Ok({ userId: testUser.id.value }),
     );
 
     const refreshUseCase = new RefreshUseCase(mockUserRepo, mockJwtService);

@@ -2,7 +2,10 @@ import { describe, it, expect } from "vitest";
 
 import { UnauthenticatedError } from "@application/useCases/errors";
 
-import { createUserRepositoryMock, createJwtServiceMock } from "@utils/testData/mocks";
+import {
+  createUserRepositoryMock,
+  createJwtServiceMock,
+} from "@utils/testData/mocks";
 import LoginUseCase from "@application/useCases/authentication/login";
 import { None, Some } from "ts-results-es";
 import { createUserOne } from "@utils/testData/testEntities";
@@ -14,12 +17,11 @@ describe("Login Use Case", () => {
     const loginUseCase = new LoginUseCase(mockUserRepo, mockJwtService);
     mockUserRepo.findByUsername.mockResolvedValue(None);
 
-          const result = await loginUseCase.execute({
-        username: "testuser",
-        password: "Test123!@#",
-      });
+    const result = await loginUseCase.execute({
+      username: "testuser",
+      password: "Test123!@#",
+    });
     it("should return unauthenticated error", () => {
-
       expect(result.unwrapErr()).toBeInstanceOf(UnauthenticatedError);
     });
   });
@@ -43,7 +45,7 @@ describe("Login Use Case", () => {
     it("update the user with the refresh token", () => {
       expect(testUser.refreshToken).toBe("testRefreshToken");
     });
-    it("should return tokens",  () => {
+    it("should return tokens", () => {
       expect(result.unwrap()).toEqual({
         accessToken: "testAccessToken",
         refreshToken: "testRefreshToken",

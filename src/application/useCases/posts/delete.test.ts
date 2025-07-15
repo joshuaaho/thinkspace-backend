@@ -31,7 +31,7 @@ describe("Delete Post Use Case", () => {
       {
         postId: testPost.id.value,
       },
-      testUser
+      testUser,
     );
 
     it("should delete the post", () => {
@@ -58,7 +58,7 @@ describe("Delete Post Use Case", () => {
       {
         postId: testPost.id.value,
       },
-      testUser
+      testUser,
     );
 
     it("should return unauthorized error", () => {
@@ -84,7 +84,7 @@ describe("Delete Post Use Case", () => {
       {
         postId: "nonexistentId",
       },
-      testUser
+      testUser,
     );
 
     it("should return resource not found error", () => {

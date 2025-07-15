@@ -1,9 +1,7 @@
-
 import EntityId from "@domain/core/EntityId";
 
 import BaseEntity from "@domain/core/BaseEntity";
 import Text from "@domain/entities/Message/Text";
-
 
 import MessageCreated from "@domain/events/MessageCreated";
 
@@ -17,7 +15,6 @@ interface MessageProps {
 }
 
 class Message extends BaseEntity {
-
   private _senderId: EntityId;
   private _text: Text;
   private _receiverId: EntityId;
@@ -36,11 +33,9 @@ class Message extends BaseEntity {
       senderId: props.senderId,
       text: props.text,
       receiverId: props.receiverId,
-      createdAt: props.createdAt
+      createdAt: props.createdAt,
     });
     if (!props.id) {
-      
-   
       message.addDomainEvent(new MessageCreated(message));
     }
     return message;
@@ -48,7 +43,7 @@ class Message extends BaseEntity {
 
   public get senderId(): EntityId {
     return this._senderId;
-  } 
+  }
   public get text(): Text {
     return this._text;
   }
@@ -58,4 +53,3 @@ class Message extends BaseEntity {
 }
 
 export default Message;
-

@@ -11,4 +11,4 @@ class CommentLiked implements IDomainEvent {
   }
 }
 
-export default CommentLiked; 
+export default CommentLiked;

@@ -1,6 +1,5 @@
 import { vi } from "vitest";
 
-
 const createBaseRepositoryMock = () => ({
   findById: vi.fn(),
   save: vi.fn(),
@@ -13,7 +12,6 @@ const createBaseRepositoryMock = () => ({
 export const createUserRepositoryMock = () => ({
   ...createBaseRepositoryMock(),
 
-  // IUserRepository specific methods
   findById: vi.fn(),
   findByUsername: vi.fn(),
   findByRefreshToken: vi.fn(),
@@ -31,7 +29,6 @@ export const createJwtServiceMock = () => ({
 export const createPostRepositoryMock = () => ({
   ...createBaseRepositoryMock(),
 
-  // IPostRepository specific methods
   query: vi.fn(),
 });
 
@@ -48,7 +45,6 @@ export const createFileUploadServiceMock = () => ({
 export const createMessageRepositoryMock = () => ({
   ...createBaseRepositoryMock(),
 
-  // IMessageRepository specific methods
   query: vi.fn(),
   getChatList: vi.fn(),
 });

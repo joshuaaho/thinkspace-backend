@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import request from "supertest";
 import app from "@index";
-import container from "@containers/index";
+import { iocContainer } from "@containers/index";
 import IUserRepository from "@domain/repositories/IUserRepository";
 import ICommentRepository from "@domain/repositories/ICommentRepository";
 import CONSTANTS from "@containers/constants";
@@ -9,7 +9,6 @@ import {
   createUserOne,
   createCommentOne,
   createPostOne,
-  createUserTwo,
   createUserThree,
 } from "@utils/testData/testEntities";
 import { createAccessToken } from "@utils/testData/infastructure";
@@ -23,11 +22,11 @@ describe("Like Comment Route", () => {
     const testUserOne = createUserOne();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
-      const commentRepository = container.get<ICommentRepository>(
-        CONSTANTS.CommentRepository
+      const commentRepository = iocContainer.get<ICommentRepository>(
+        CONSTANTS.CommentRepository,
       );
 
       await userRepository.save(testUser);
@@ -52,15 +51,15 @@ describe("Like Comment Route", () => {
     it("should add user to comment's likedBy array", async () => {
       await initializeData();
       await sendRequest();
-      const commentRepository = container.get<ICommentRepository>(
-        CONSTANTS.CommentRepository
+      const commentRepository = iocContainer.get<ICommentRepository>(
+        CONSTANTS.CommentRepository,
       );
       const updatedComment = await commentRepository.findById(
-        testComment.id.value
+        testComment.id.value,
       );
       expect(updatedComment.isSome()).toBe(true);
       expect(
-        updatedComment.unwrap().likedBy.some((id) => id.equals(testUser.id))
+        updatedComment.unwrap().likedBy.some((id) => id.equals(testUser.id)),
       ).toBe(true);
     });
   });
@@ -69,8 +68,8 @@ describe("Like Comment Route", () => {
     const testComment = createCommentOne();
 
     async function initializeData() {
-      const commentRepository = container.get<ICommentRepository>(
-        CONSTANTS.CommentRepository
+      const commentRepository = iocContainer.get<ICommentRepository>(
+        CONSTANTS.CommentRepository,
       );
       await commentRepository.save(testComment);
     }
@@ -90,8 +89,8 @@ describe("Like Comment Route", () => {
     const testUser = createUserOne();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
       await userRepository.save(testUser);
     }
@@ -116,11 +115,11 @@ describe("Like Comment Route", () => {
     const testComment = createCommentOne();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
-      const commentRepository = container.get<ICommentRepository>(
-        CONSTANTS.CommentRepository
+      const commentRepository = iocContainer.get<ICommentRepository>(
+        CONSTANTS.CommentRepository,
       );
 
       await userRepository.save(testUser);
@@ -137,9 +136,9 @@ describe("Like Comment Route", () => {
 
     it("should return 400 status code", async () => {
       await initializeData();
-      // Like the comment first time
+
       await sendRequest();
-      // Try to like again
+
       const response = await sendRequest();
       expect(response.status).toBe(400);
     });
@@ -155,11 +154,11 @@ describe("Like Comment Route", () => {
     });
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
-      const commentRepository = container.get<ICommentRepository>(
-        CONSTANTS.CommentRepository
+      const commentRepository = iocContainer.get<ICommentRepository>(
+        CONSTANTS.CommentRepository,
       );
 
       await userRepository.save(testUser);

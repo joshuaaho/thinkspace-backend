@@ -1,7 +1,4 @@
-import ValueObject from '@domain/core/BaseValueObject';
-
-
-
+import ValueObject from "@domain/core/BaseValueObject";
 
 class EntityId extends ValueObject {
   private readonly _value: string;
@@ -11,15 +8,13 @@ class EntityId extends ValueObject {
     this._value = value;
   }
 
-  public static create(id: string){
+  public static create(id: string) {
     return new EntityId(id);
   }
-  
+
   get value(): string {
     return this._value;
   }
-
-
-} 
+}
 
 export default EntityId;

@@ -21,7 +21,7 @@ class JwtService implements IJwtService {
       process.env.JWT_ACCESS_TOKEN_SECRET as string,
       {
         expiresIn: process.env.JWT_ACCESS_EXPIRATION as StringValue,
-      }
+      },
     );
 
     return token;
@@ -33,36 +33,38 @@ class JwtService implements IJwtService {
       process.env.JWT_REFRESH_TOKEN_SECRET as string,
       {
         expiresIn: process.env.JWT_REFRESH_EXPIRATION as StringValue,
-      }
+      },
     );
 
     return refreshToken;
   }
   verifyAccessToken(
-    token: AccessToken
+    token: AccessToken,
   ): Result<JwtPayload, UnauthenticatedError> {
     try {
       const payload = jwt.verify(
         token,
-        process.env.JWT_ACCESS_TOKEN_SECRET as string
+        process.env.JWT_ACCESS_TOKEN_SECRET as string,
       ) as JwtPayload;
       return Ok(payload);
-    } catch (error) {
+    } catch (_error) {
       return Err(new UnauthenticatedError("Invalid access token"));
     }
   }
 
   verifyRefreshToken(
-    token: RefreshToken
+    token: RefreshToken,
   ): Result<JwtPayload, UnauthenticatedError> {
     try {
       const payload = jwt.verify(
         token,
-        process.env.JWT_REFRESH_TOKEN_SECRET as string
+        process.env.JWT_REFRESH_TOKEN_SECRET as string,
       ) as JwtPayload;
       return Ok(payload);
-    } catch (error) {
-      return Err(new UnauthenticatedError("Invalid refresh token"));
+    } catch (_error) {
+      return Err(
+        new UnauthenticatedError("Invalid refresh token. Please login again."),
+      );
     }
   }
 }

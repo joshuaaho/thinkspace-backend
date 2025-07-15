@@ -1,10 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { None, Some } from "ts-results-es";
+import { Some } from "ts-results-es";
 import {
   createUserRepositoryMock,
   createPostRepositoryMock,
 } from "@utils/testData/mocks";
-import { UnauthenticatedError } from "@application/useCases/errors";
 import { ValidationError } from "@domain/errors";
 import CreatePost from "./create";
 import { createUserOne } from "@utils/testData/testEntities";
@@ -19,12 +18,15 @@ describe("Create Post Use Case", () => {
     const mockPostRepo = createPostRepositoryMock();
     const createPost = new CreatePost(mockPostRepo);
 
-    const result = await createPost.execute({
-      title: "new post",
-      content: "new post content",
-      tags: ["test"],
-      imgUrls: ["https://www.google.com"],
-    },testUser);
+    const result = await createPost.execute(
+      {
+        title: "new post",
+        content: "new post content",
+        tags: ["test"],
+        imgUrls: ["https://www.google.com"],
+      },
+      testUser,
+    );
 
     it("should save the post", () => {
       expect(mockPostRepo.save).toHaveBeenCalledOnce();
@@ -42,8 +44,6 @@ describe("Create Post Use Case", () => {
     });
   });
 
-
-
   describe("when post is not valid", async () => {
     const testUser = createUserOne();
     const mockUserRepo = createUserRepositoryMock();
@@ -52,12 +52,15 @@ describe("Create Post Use Case", () => {
     const mockPostRepo = createPostRepositoryMock();
     const createPost = new CreatePost(mockPostRepo);
 
-    const result = await createPost.execute({
-      title: "",
-      content: "",
-      tags: ["test"],
-      imgUrls: ["test"],
-    },testUser);
+    const result = await createPost.execute(
+      {
+        title: "",
+        content: "",
+        tags: ["test"],
+        imgUrls: ["test"],
+      },
+      testUser,
+    );
 
     it("should return validation error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(ValidationError);

@@ -1,9 +1,7 @@
 import { Err, Ok, Result } from "ts-results-es";
 import ICommentRepository from "@domain/repositories/ICommentRepository";
 import { injectable, inject } from "inversify";
-import {
-  ResourceNotFoundError,
-} from "@application/useCases/errors";
+import { ResourceNotFoundError } from "@application/useCases/errors";
 import {
   AlreadyLikedCommentError,
   SelfLikedCommentError,
@@ -19,19 +17,19 @@ export type LikeCommentCommand = {
 class LikeComment {
   private commentRepo: ICommentRepository;
 
-  constructor(@inject(CONSTANTS.CommentRepository) commentRepo: ICommentRepository) {
+  constructor(
+    @inject(CONSTANTS.CommentRepository) commentRepo: ICommentRepository,
+  ) {
     this.commentRepo = commentRepo;
   }
 
   public async execute(
     request: LikeCommentCommand,
-    requestor: User
+    requestor: User,
   ): Promise<
     Result<
       void,
-      | AlreadyLikedCommentError
-      | ResourceNotFoundError
-      | SelfLikedCommentError
+      AlreadyLikedCommentError | ResourceNotFoundError | SelfLikedCommentError
     >
   > {
     const someComment = await this.commentRepo.findById(request.commentId);

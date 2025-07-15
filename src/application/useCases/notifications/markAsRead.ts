@@ -3,10 +3,13 @@ import CONSTANTS from "@containers/constants";
 import INotificationRepository from "@domain/repositories/INotificationRepository";
 import User from "@domain/entities/User";
 
-export type MarkAsReadCommand = Partial<{
-  redirectToResourceType: string;
-  resourceId: string;
-}>;
+/**
+ * Filter to mark notifications as read
+ */
+export interface MarkAsReadCommand {
+  redirectToResourceType?: string;
+  resourceId?: string;
+}
 
 @injectable()
 class MarkAsRead {
@@ -14,14 +17,14 @@ class MarkAsRead {
 
   constructor(
     @inject(CONSTANTS.NotificationRepository)
-    notificationRepo: INotificationRepository
+    notificationRepo: INotificationRepository,
   ) {
     this.notificationRepo = notificationRepo;
   }
 
   public async execute(
     command: MarkAsReadCommand,
-    requestor: User
+    requestor: User,
   ): Promise<void> {
     const notifications = await this.notificationRepo.findAllBy({
       redirectToResourceType: command.redirectToResourceType,

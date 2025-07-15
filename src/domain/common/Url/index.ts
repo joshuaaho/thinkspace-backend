@@ -12,13 +12,17 @@ class Url extends ValueObject {
 
   public static create(url: string): Result<Url, ValidationError> {
     try {
-      // Basic URL validation regex
-      const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
+      const urlPattern =
+        /^https?:\/\/[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(:[0-9]+)?(\/.*)?$/;
+
       if (!urlPattern.test(url)) {
-        return Err(new ValidationError("Invalid URL"));
+        return Err(
+          new ValidationError("Invalid URL. Must be a valid HTTP or HTTPS URL"),
+        );
       }
+
       return Ok(new Url(url));
-    } catch(error: any) {
+    } catch (_error) {
       return Err(new ValidationError("Invalid URL"));
     }
   }
@@ -26,8 +30,6 @@ class Url extends ValueObject {
   get value() {
     return this._value;
   }
-
-  
 }
 
 export default Url;

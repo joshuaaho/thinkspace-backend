@@ -1,32 +1,27 @@
-# Build stage
-FROM node:20-alpine AS builder
+FROM node
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-RUN npm ci
-
-# Copy source code
+# Copy files
 COPY . .
+
+# Install dependencies
+RUN npm install
+
 
 # Build TypeScript
 RUN npm run build
 
-# Production stage
-FROM node:20-alpine
+
 
 WORKDIR /app
 
-# Copy package files and install production dependencies
-COPY package*.json ./
-RUN npm ci --only=production
-
-# Copy built files from builder
-COPY --from=builder /app/dist ./dist
 
 # Expose port
-EXPOSE 3000
+EXPOSE 8081
 
 # Start the application
-CMD ["node", "dist/index.js"] 
+CMD ["node", "dist/src/index.js"] 
+
+# https://logs-prod-020.grafana.net
+# 1152813:glc_eyJvIjoiMTM3MTYzNiIsIm4iOiJzdGFjay0xMTk1MDE0LWhsLXJlYWQtdGhpbmtzcGFjZSIsImsiOiJWY1UyZzc1dU44b2Y5NjNXbHBqOXV5ODkiLCJtIjp7InIiOiJwcm9kLWFwLXNvdXRoZWFzdC0xIn19

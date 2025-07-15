@@ -19,20 +19,17 @@ export type EditCommentCommand = {
 class EditComment {
   private commentRepo: ICommentRepository;
 
-  constructor(@inject(CONSTANTS.CommentRepository) commentRepo: ICommentRepository) {
+  constructor(
+    @inject(CONSTANTS.CommentRepository) commentRepo: ICommentRepository,
+  ) {
     this.commentRepo = commentRepo;
   }
 
   public async execute(
     request: EditCommentCommand,
-    requestor: User
+    requestor: User,
   ): Promise<
-    Result<
-      void,
-      | ValidationError
-      | UnauthorizedError
-      | ResourceNotFoundError
-    >
+    Result<void, ValidationError | UnauthorizedError | ResourceNotFoundError>
   > {
     const someComment = await this.commentRepo.findById(request.commentId);
     if (someComment.isNone()) {
@@ -45,7 +42,10 @@ class EditComment {
     if (contentOrError.isErr()) {
       return contentOrError;
     }
-    const someError = comment.updateFromUserEdits(requestor, contentOrError.value);
+    const someError = comment.updateFromUserEdits(
+      requestor,
+      contentOrError.value,
+    );
     if (someError.isErr()) {
       return someError;
     }

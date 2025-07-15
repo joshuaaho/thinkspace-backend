@@ -1,22 +1,38 @@
 {
   "entryFile": "src/index.ts",
   "noImplicitAdditionalProperties": "throw-on-extras",
+
   "controllerPathGlobs": ["src/presentation/controllers/**/*.ts"],
+
   "spec": {
-    "outputDirectory": "docs",
+    "outputDirectory": "./docs",
     "specVersion": 3,
     "securityDefinitions": {
-      "api_key": {
-        "type": "apiKey",
-        "name": "access_token",
-        "in": "query"
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
       }
-    
     }
   },
   "routes": {
-    "routesDir": "routesBuild",
-    "iocModule": "src/containers",
-    "authenticationModule": "src/middleware/auth"
+    "routesDir": "src/presentation/routesBuild",
+    "iocModule": "src/containers/index.ts",
+    "authenticationModule": "src/presentation/middleware/auth"
+  },
+  "compilerOptions": {
+    "paths": {
+      "@domain/*": ["./src/domain/*"],
+      "@application/*": ["./src/application/*"],
+      "@infrastructure/*": ["./src/infrastructure/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@containers/*": ["./src/containers/*"],
+      "@index": ["./src/index.ts"],
+      "@presentation/*": ["./src/presentation/*"],
+      "@socket": ["./src/infrastructure/socket/index.ts"],
+      "@zod": ["./src/zod.ts"],
+      "@testSetup/*": ["./src/testSetup/*"],
+      "@types": ["./src/types.ts"]
+    }
   }
 }

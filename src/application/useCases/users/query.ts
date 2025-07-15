@@ -3,12 +3,20 @@ import IUserRepository from "@domain/repositories/IUserRepository";
 import CONSTANTS from "@containers/constants";
 import { ThemePreference } from "@domain/entities/User";
 
-export type QueryUsersCommand = Partial<{
-  offset: number;
-  limit: number;
-  username: string;
-}>;
+export interface QueryUsersCommand {
+  offset?: number;
 
+  limit?: number;
+
+  /**
+   * The username of the user to query
+   */
+  username?: string;
+}
+
+/**
+ * Information about the users
+ */
 export type QueryUsersResponse = {
   id: string;
   username: string;
@@ -27,9 +35,7 @@ export type QueryUsersResponse = {
 class QueryUsersUseCase {
   private userRepo: IUserRepository;
 
-  constructor(
-    @inject(CONSTANTS.UserRepository) userRepo: IUserRepository
-  ) {
+  constructor(@inject(CONSTANTS.UserRepository) userRepo: IUserRepository) {
     this.userRepo = userRepo;
   }
 
@@ -62,4 +68,4 @@ class QueryUsersUseCase {
   }
 }
 
-export default QueryUsersUseCase; 
+export default QueryUsersUseCase;

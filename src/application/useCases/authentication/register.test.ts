@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { ConflictError } from "@application/useCases/errors";
 import { createUserRepositoryMock } from "@utils/testData/mocks";
 import RegisterUseCase from "@application/useCases/authentication/register";

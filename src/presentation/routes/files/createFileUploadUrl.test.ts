@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import request from "supertest";
 import app from "@index";
-import container from "@containers/index";
+import { iocContainer } from "@containers/index";
 import IUserRepository from "@domain/repositories/IUserRepository";
 import CONSTANTS from "@containers/constants";
 import { createUserOne } from "@utils/testData/testEntities";
@@ -12,8 +12,8 @@ describe("Create File Upload URL Route", () => {
     const testUser = createUserOne();
 
     const initializeData = async () => {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
       await userRepository.save(testUser);
     };

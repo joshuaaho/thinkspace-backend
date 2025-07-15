@@ -1,10 +1,20 @@
 import { describe, it, expect } from "vitest";
 import { None, Some } from "ts-results-es";
-import { createUserRepositoryMock, createCommentRepositoryMock } from "@utils/testData/mocks";
-import { ResourceNotFoundError, UnauthenticatedError } from "@application/useCases/errors";
-import { AlreadyLikedCommentError, SelfLikedCommentError } from "@domain/errors";
+import {
+  createUserRepositoryMock,
+  createCommentRepositoryMock,
+} from "@utils/testData/mocks";
+import { ResourceNotFoundError } from "@application/useCases/errors";
+import {
+  AlreadyLikedCommentError,
+  SelfLikedCommentError,
+} from "@domain/errors";
 import LikeCommentUseCase from "@application/useCases/comments/like";
-import { createUserOne, createUserTwo, createUserThree } from "@utils/testData/testEntities";
+import {
+  createUserOne,
+  createUserTwo,
+  createUserThree,
+} from "@utils/testData/testEntities";
 import { createCommentOne } from "@utils/testData/testEntities";
 import { DomainEvents } from "@domain/events/DomainEvents";
 import CommentLikedEvent from "@domain/events/CommentLiked";
@@ -14,18 +24,22 @@ describe("Like Comment Use Case", () => {
     const testUser = createUserThree();
     const testComment = createCommentOne();
 
-
     const mockCommentRepo = createCommentRepositoryMock();
     mockCommentRepo.findById.mockResolvedValue(Some(testComment));
 
     const likeComment = new LikeCommentUseCase(mockCommentRepo);
 
-    const result = await likeComment.execute({
-      commentId: testComment.id.value,
-    },testUser);
+    const result = await likeComment.execute(
+      {
+        commentId: testComment.id.value,
+      },
+      testUser,
+    );
 
     it("should add user to liked by array", () => {
-      expect(testComment.likedBy.some((id) => id.equals(testUser.id))).toBe(true);
+      expect(testComment.likedBy.some((id) => id.equals(testUser.id))).toBe(
+        true,
+      );
     });
 
     it("should save the comment", () => {
@@ -46,8 +60,6 @@ describe("Like Comment Use Case", () => {
     });
   });
 
- 
-
   describe("when comment is not found", async () => {
     const testUser = createUserOne();
     const mockUserRepo = createUserRepositoryMock();
@@ -58,9 +70,12 @@ describe("Like Comment Use Case", () => {
 
     const likeComment = new LikeCommentUseCase(mockCommentRepo);
 
-    const result = await likeComment.execute({
-      commentId: "nonexistentId",
-    },testUser);
+    const result = await likeComment.execute(
+      {
+        commentId: "nonexistentId",
+      },
+      testUser,
+    );
 
     it("should return resource not found error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(ResourceNotFoundError);
@@ -83,9 +98,12 @@ describe("Like Comment Use Case", () => {
 
     const likeComment = new LikeCommentUseCase(mockCommentRepo);
 
-    const result = await likeComment.execute({
-      commentId: testComment.id.value,
-    },testUser);
+    const result = await likeComment.execute(
+      {
+        commentId: testComment.id.value,
+      },
+      testUser,
+    );
 
     it("should return self liked comment error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(SelfLikedCommentError);
@@ -100,15 +118,17 @@ describe("Like Comment Use Case", () => {
     const testUser = createUserTwo();
     const testComment = createCommentOne();
 
-
     const mockCommentRepo = createCommentRepositoryMock();
     mockCommentRepo.findById.mockResolvedValue(Some(testComment));
 
-        const likeComment = new LikeCommentUseCase(mockCommentRepo);
+    const likeComment = new LikeCommentUseCase(mockCommentRepo);
 
-    const result = await likeComment.execute({
-      commentId: testComment.id.value,
-    },testUser);
+    const result = await likeComment.execute(
+      {
+        commentId: testComment.id.value,
+      },
+      testUser,
+    );
 
     it("should return already liked comment error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(AlreadyLikedCommentError);
@@ -118,4 +138,4 @@ describe("Like Comment Use Case", () => {
       expect(mockCommentRepo.save).not.toHaveBeenCalled();
     });
   });
-}); 
+});

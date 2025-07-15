@@ -1,33 +1,38 @@
-import { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
 import CONSTANTS from "@containers/constants";
-import { ResourceNotFoundError } from "@application/useCases/errors";
 import { AuthenticatedRequest } from "@presentation/middleware/auth";
 import GetMe from "@application/useCases/users/getMe";
+import {
+  Controller,
+  Get,
+  Route,
+  Response,
+  SuccessResponse,
+  Request,
+  Security,
+  Tags,
+} from "tsoa";
+import { HTTPError } from "@presentation/middleware/errorHandler";
 
 @injectable()
-class GetMeController {
+@Tags("Users")
+@Route("me")
+@Security("bearerAuth")
+export class GetMeController extends Controller {
   private getMeUseCase: GetMe;
 
-  constructor(
-    @inject(CONSTANTS.GetMeUseCase) getMeUseCase: GetMe
-  ) {
+  constructor(@inject(CONSTANTS.GetMeUseCase) getMeUseCase: GetMe) {
+    super();
     this.getMeUseCase = getMeUseCase;
   }
 
-  async handleGetMe(req: Request, res: Response, next: NextFunction) {
-    try {
-      const result = await this.getMeUseCase.execute(
-        (req as AuthenticatedRequest).requestor
-      );
+  @Get()
+  @Response<HTTPError>(401, "Unauthenticated")
+  @SuccessResponse("200", "User Retrieved Successfully")
+  async handleGetMe(@Request() req: AuthenticatedRequest) {
+    const data = await this.getMeUseCase.execute(req.user);
 
-
-
-      return res.status(200).json(result);
-    } catch (error) {
-      next(error);
-    }
+    this.setStatus(200);
+    return data;
   }
 }
-
-export default GetMeController; 

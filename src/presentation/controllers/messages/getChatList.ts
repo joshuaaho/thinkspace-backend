@@ -1,31 +1,40 @@
-import { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
-import GetChatList from "@application/useCases/messages/getChatList";
 import CONSTANTS from "@containers/constants";
-import { ResourceNotFoundError } from "@application/useCases/errors";
+import {
+  Controller,
+  Get,
+  Route,
+  Response,
+  SuccessResponse,
+  Request,
+  Security,
+  Tags,
+} from "tsoa";
+import GetChatListUseCase from "@application/useCases/messages/getChatList";
+import { HTTPError } from "@presentation/middleware/errorHandler";
 import { AuthenticatedRequest } from "@presentation/middleware/auth";
-
 @injectable()
-class GetChatListController {
-  private getChatListUseCase: GetChatList;
+@Tags("Messages")
+@Route("chats")
+@Security("bearerAuth")
+export class GetChatListController extends Controller {
+  private getChatListUseCase: GetChatListUseCase;
 
   constructor(
-    @inject(CONSTANTS.GetChatListUseCase) getChatListUseCase: GetChatList
+    @inject(CONSTANTS.GetChatListUseCase)
+    getChatListUseCase: GetChatListUseCase,
   ) {
+    super();
     this.getChatListUseCase = getChatListUseCase;
   }
 
-  async getChatList(req: Request, res: Response, next: NextFunction) {
-    try {
-      const result = await this.getChatListUseCase.execute(
-        (req as AuthenticatedRequest).requestor
-      );
+  @Get()
+  @Response<HTTPError>(401, "Unauthenticated")
+  @SuccessResponse("200", "Chat List Retrieved Successfully")
+  async getChatList(@Request() req: AuthenticatedRequest) {
+    const data = await this.getChatListUseCase.execute(req.user);
 
-      return res.status(200).json(result);
-    } catch (error) {
-      next(error);
-    }
+    this.setStatus(200);
+    return data;
   }
 }
-
-export default GetChatListController;

@@ -19,7 +19,7 @@ class NotifyCommentAuthorOnCommentLiked implements IHandle {
     @inject(CONSTANTS.NotificationService)
     notificationService: INotificationService,
     @inject(CONSTANTS.NotificationRepository)
-    notificationRepo: INotificationRepository
+    notificationRepo: INotificationRepository,
   ) {
     this.userRepo = userRepo;
     this.notificationService = notificationService;
@@ -33,18 +33,15 @@ class NotifyCommentAuthorOnCommentLiked implements IHandle {
   public async onCommentLiked(event: CommentLiked): Promise<void> {
     const { comment } = event;
 
-    // Get the comment author
     const author = (
       await this.userRepo.findById(comment.authorId.value)
     ).unwrap();
 
-    // Get the most recent user who liked the comment (last in the likedBy array)
     const mostRecentLikerId = comment.likedBy[comment.likedBy.length - 1];
     const liker = (
       await this.userRepo.findById(mostRecentLikerId.value)
     ).unwrap();
 
-    // Create notification for the comment author
     const notification = Notification.create({
       to: author.id,
       from: liker.id,
@@ -54,10 +51,8 @@ class NotifyCommentAuthorOnCommentLiked implements IHandle {
       redirectToResourceType: "posts",
     });
 
-    // Save notification to the database
     await this.notificationRepo.save(notification);
 
-    // Send notification through the notification service
     await this.notificationService.sendNotification(notification);
   }
 }

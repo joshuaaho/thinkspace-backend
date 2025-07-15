@@ -4,16 +4,19 @@ import valueEqual from "value-equal";
 import { describe, it, expect } from "vitest";
 import Url from "@domain/common/Url";
 import EditPostUseCase from "./edit";
-import { None, Ok, Some } from "ts-results-es";
+import { None, Some } from "ts-results-es";
 import Tag from "@domain/entities/Post/Tag";
-import { createUserRepositoryMock, createPostRepositoryMock } from "@utils/testData/mocks";
-import { ResourceNotFoundError, UnauthenticatedError, UnauthorizedError } from "../errors";
+import {
+  createUserRepositoryMock,
+  createPostRepositoryMock,
+} from "@utils/testData/mocks";
+import { ResourceNotFoundError, UnauthorizedError } from "../errors";
 import {
   createPostOne,
   createUserOne,
   createUserTwo,
   invalidPostOneUpdates,
-  postOneUpdates, 
+  postOneUpdates,
 } from "@utils/testData/testEntities";
 import { ValidationError } from "@domain/errors";
 
@@ -28,10 +31,13 @@ describe("Edit Post Use Case", () => {
     mockPostRepo.findById.mockResolvedValue(Some(testPost));
 
     const editPost = new EditPostUseCase(mockPostRepo);
-    const result = await editPost.execute({
-      ...postOneUpdates,
-      postId: testPost.id.value,
-    },testUser  );
+    const result = await editPost.execute(
+      {
+        ...postOneUpdates,
+        postId: testPost.id.value,
+      },
+      testUser,
+    );
 
     it("should return unauthorized error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(UnauthorizedError);
@@ -52,10 +58,13 @@ describe("Edit Post Use Case", () => {
     mockPostRepo.findById.mockResolvedValue(Some(testPost));
 
     const editPost = new EditPostUseCase(mockPostRepo);
-    const result = await editPost.execute({
-      ...postOneUpdates,
-      postId: testPost.id.value,
-    },testUser);
+    const result = await editPost.execute(
+      {
+        ...postOneUpdates,
+        postId: testPost.id.value,
+      },
+      testUser,
+    );
 
     it("should return success", () => {
       expect(result.isOk()).toBe(true);
@@ -63,13 +72,15 @@ describe("Edit Post Use Case", () => {
 
     it("should update post title", () => {
       expect(
-        testPost.title.equals(Title.create(postOneUpdates.title).unwrap())
+        testPost.title.equals(Title.create(postOneUpdates.title).unwrap()),
       ).toBe(true);
     });
 
     it("should update post content", () => {
       expect(
-        testPost.content.equals(Content.create(postOneUpdates.content).unwrap())
+        testPost.content.equals(
+          Content.create(postOneUpdates.content).unwrap(),
+        ),
       ).toBe(true);
     });
 
@@ -77,8 +88,8 @@ describe("Edit Post Use Case", () => {
       expect(
         valueEqual(
           testPost.imgUrls,
-          postOneUpdates.imgUrls.map((url) => Url.create(url).unwrap())
-        )
+          postOneUpdates.imgUrls.map((url) => Url.create(url).unwrap()),
+        ),
       ).toBe(true);
     });
 
@@ -86,8 +97,8 @@ describe("Edit Post Use Case", () => {
       expect(
         valueEqual(
           testPost.tags,
-          postOneUpdates.tags.map((tag) => Tag.create(tag).unwrap())
-        )
+          postOneUpdates.tags.map((tag) => Tag.create(tag).unwrap()),
+        ),
       ).toBe(true);
     });
 
@@ -105,10 +116,13 @@ describe("Edit Post Use Case", () => {
     mockPostRepo.findById.mockResolvedValue(None);
 
     const editPost = new EditPostUseCase(mockPostRepo);
-    const result = await editPost.execute({
-      ...postOneUpdates,
-      postId: "non-existent-post-id",
-    },testUser);
+    const result = await editPost.execute(
+      {
+        ...postOneUpdates,
+        postId: "non-existent-post-id",
+      },
+      testUser,
+    );
 
     it("should return resource not found error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(ResourceNotFoundError);
@@ -129,10 +143,13 @@ describe("Edit Post Use Case", () => {
     mockPostRepo.findById.mockResolvedValue(Some(testPost));
 
     const editPost = new EditPostUseCase(mockPostRepo);
-    const result = await editPost.execute({
-      ...invalidPostOneUpdates,
-      postId: testPost.id.value,
-    },testUser);
+    const result = await editPost.execute(
+      {
+        ...invalidPostOneUpdates,
+        postId: testPost.id.value,
+      },
+      testUser,
+    );
 
     it("should return validation error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(ValidationError);

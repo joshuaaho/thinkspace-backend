@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import request from "supertest";
 import app from "@index";
-import container from "@containers/index";
+import { iocContainer } from "@containers/index";
 import IPostRepository from "@domain/repositories/IPostRepository";
 import CONSTANTS from "@containers/constants";
 import { createPostOne, createUserOne } from "@utils/testData/testEntities";
@@ -13,11 +13,11 @@ describe("Get Post By Id Route", () => {
     const testUser = createUserOne();
 
     async function initializeData() {
-      const postRepository = container.get<IPostRepository>(
-        CONSTANTS.PostRepository
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
       );
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
       await userRepository.save(testUser);
       await postRepository.save(testPost);
@@ -63,7 +63,7 @@ describe("Get Post By Id Route", () => {
       const response = await sendRequest();
       expect(response.body).toHaveProperty(
         "tags",
-        testPost.tags.map((tag) => tag.value)
+        testPost.tags.map((tag) => tag.value),
       );
     });
   });

@@ -11,4 +11,4 @@ class PostLiked implements IDomainEvent {
   }
 }
 
-export default PostLiked; 
+export default PostLiked;

@@ -2,11 +2,9 @@ import BaseEntity from "@domain/core/BaseEntity";
 import EntityId from "@domain/core/EntityId";
 import { IDataMapper } from "@domain/core/IMapper";
 
-import IRepositoryPort, {
+import IRepositoryPort from "@domain/repositories/IRepository";
 
-} from "@domain/repositories/IRepository";
-
-import { Collection, MongoClient, ObjectId, WithId } from "mongodb";
+import { Collection } from "mongodb";
 import { None, Option, Some } from "ts-results-es";
 
 export abstract class MongoBaseRepository<T extends BaseEntity>
@@ -34,12 +32,10 @@ export abstract class MongoBaseRepository<T extends BaseEntity>
   }
 
   async save(entity: T): Promise<void> {
-
     const entityExists = await this.collectionInstance.findOne({
       id: entity.id.value,
     });
     if (!entityExists) {
-
       await this.collectionInstance.insertOne(this.mapper.toDalEntity(entity));
 
       return;
@@ -47,26 +43,22 @@ export abstract class MongoBaseRepository<T extends BaseEntity>
 
     await this.collectionInstance.replaceOne(
       { id: entity.id.value },
-      this.mapper.toDalEntity(entity)
+      this.mapper.toDalEntity(entity),
     );
-
   }
-
 
   async delete(entityId: EntityId): Promise<void> {
     await this.collectionInstance.deleteOne({ id: entityId.value });
   }
 
   async deleteAll(): Promise<void> {
-
     await this.collectionInstance.deleteMany({});
   }
 
   async deleteMany(filter: any): Promise<void> {
-
     await this.collectionInstance.deleteMany(filter);
   }
-  
+
   async findAll(): Promise<T[]> {
     const dalEntities = await this.collectionInstance.find({}).toArray();
     return dalEntities.map((dalEntity) => this.mapper.toDomain(dalEntity));

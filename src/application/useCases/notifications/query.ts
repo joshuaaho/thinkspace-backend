@@ -4,18 +4,32 @@ import INotificationRepository from "@domain/repositories/INotificationRepositor
 import User from "@domain/entities/User";
 import IUserRepository from "@domain/repositories/IUserRepository";
 
-export type QueryNotificationsCommand = Partial<{
-  offset: number;   
-  limit: number;
-}>;
+export interface QueryNotificationsCommand {
+  offset?: number;
+  limit?: number;
+}
 
 export type QueryNotificationsResponse = {
   id: string;
+
+  /**
+   * The profile image url of the user who sent the notification
+   */
   fromProfileImgUrl: string;
+
   message: string;
   isRead: boolean;
+
+  /**
+   * The id of a specific "ResrouceType"
+   */
   resourceId: string;
+
+  /**
+   * Metadata on what type of resource should be redirected to after clicking the notification
+   */
   redirectToResourceType: string;
+
   createdAt: string;
 }[];
 
@@ -28,7 +42,7 @@ class QueryNotifications {
     @inject(CONSTANTS.NotificationRepository)
     notificationRepo: INotificationRepository,
     @inject(CONSTANTS.UserRepository)
-    userRepo: IUserRepository
+    userRepo: IUserRepository,
   ) {
     this.notificationRepo = notificationRepo;
     this.userRepo = userRepo;
@@ -36,7 +50,7 @@ class QueryNotifications {
 
   public async execute(
     command: QueryNotificationsCommand,
-    requestor: User
+    requestor: User,
   ): Promise<QueryNotificationsResponse> {
     const notifications = await this.notificationRepo.query({
       to: requestor.id.value,
@@ -46,7 +60,9 @@ class QueryNotifications {
 
     return Promise.all(
       notifications.map(async (notification) => {
-        const fromUser = (await this.userRepo.findById(notification.from.value)).unwrap();
+        const fromUser = (
+          await this.userRepo.findById(notification.from.value)
+        ).unwrap();
         return {
           id: notification.id.value,
           fromProfileImgUrl: fromUser.profileImgUrl.value,
@@ -56,9 +72,9 @@ class QueryNotifications {
           redirectToResourceType: notification.redirectToResourceType,
           createdAt: notification.createdAt.toString(),
         };
-      })
+      }),
     );
   }
 }
 
-export default QueryNotifications; 
+export default QueryNotifications;

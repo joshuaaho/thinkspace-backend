@@ -1,54 +1,75 @@
-import { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
 import RefreshUseCase, {
   RefreshCommand,
 } from "@application/useCases/authentication/refresh";
 import CONSTANTS from "@containers/constants";
 import { ToZodSchema } from "@zod";
-import z from "zod";
+import { z } from "zod";
+import {
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+  NextFunction as ExpressNextFunction,
+} from "express";
+import {
+  Controller,
+  Middlewares,
+  Post,
+  Route,
+  Response,
+  SuccessResponse,
+  Request,
+  Tags,
+} from "tsoa";
+import { HTTPError } from "@presentation/middleware/errorHandler";
+
+async function customMiddleware(
+  req: ExpressRequest,
+  res: ExpressResponse,
+  next: ExpressNextFunction,
+) {
+  const schema = z.object({
+    refreshToken: z.string(),
+  } satisfies ToZodSchema<RefreshCommand>);
+
+  const validationResult = schema.safeParse({
+    refreshToken: req.cookies.jwt,
+  });
+
+  if (!validationResult.success) {
+    return next(validationResult.error);
+  }
+  return next();
+}
 
 @injectable()
-class RefreshController {
+@Tags("Authentication")
+@Route("auth")
+export class RefreshController extends Controller {
   private refreshUseCase: RefreshUseCase;
 
   constructor(
-    @inject(CONSTANTS.RefreshUseCase) refreshUseCase: RefreshUseCase
+    @inject(CONSTANTS.RefreshUseCase) refreshUseCase: RefreshUseCase,
   ) {
+    super();
     this.refreshUseCase = refreshUseCase;
   }
 
-  async refresh(req: Request, res: Response, next: NextFunction) {
-    try {
-      if (!req.cookies || !req.cookies.jwt) {
-        return res.status(400).json({ error: "Refresh token is required" });
-      }
+  @Post("/refresh")
+  @Middlewares(customMiddleware)
+  @Response<HTTPError>(400, "Invalid refresh token or invalid HTTP request")
+  @SuccessResponse("201", "Created")
+  async refresh(@Request() req: ExpressRequest) {
+    const data = await this.refreshUseCase.execute({
+      refreshToken: req.cookies.jwt,
+    });
 
-      const schema = z.object({
-        refreshToken: z.string(),
-      } satisfies ToZodSchema<RefreshCommand>);
-
-      const validationResult = schema.safeParse({
-        refreshToken: req.cookies.jwt,
-      });
-
-      if (!validationResult.success) {
-        return res.status(400).json({ error: "Invalid HTTP request" });
-      }
-      const result = await this.refreshUseCase.execute({
-        refreshToken: validationResult.data.refreshToken,
-      });
-
-      if (result.isErr()) {
-        return res.status(400).json({ error: result.error.message });
-      }
-
-      const { accessToken } = result.value;
-
-      return res.status(201).json({ accessToken });
-    } catch (error) {
-      next(error);
+    if (data.isErr()) {
+      throw data.error;
     }
+
+    const { accessToken } = data.value;
+
+    this.setStatus(201);
+    return { accessToken };
   }
 }
-
-export default RefreshController;

@@ -1,6 +1,6 @@
-  import { Result, Ok, Err } from 'ts-results-es';
-import ValueObject from '@domain/core/BaseValueObject';
-import { ValidationError } from '@domain/errors';
+import { Result, Ok, Err } from "ts-results-es";
+import ValueObject from "@domain/core/BaseValueObject";
+import { ValidationError } from "@domain/errors";
 
 class Location extends ValueObject {
   private readonly _value: string;
@@ -11,15 +11,18 @@ class Location extends ValueObject {
   }
 
   public static create(location: string): Result<Location, ValidationError> {
-    if (!location || location.trim().length === 0) {
-      return Err(new ValidationError("Location cannot be empty"));
+    const trimmedLocation = location.trim();
+    if (trimmedLocation.length < 3) {
+      return Err(
+        new ValidationError("Location cannot have less than 3 characters"),
+      );
     }
 
-    if (location.length > 150) {
-      return Err(new ValidationError("Location cannot exceed 150 characters"));
+    if (trimmedLocation.length > 100) {
+      return Err(new ValidationError("Location cannot exceed 100 characters"));
     }
 
-    return Ok(new Location(location));
+    return Ok(new Location(trimmedLocation));
   }
 
   get value(): string {
@@ -27,4 +30,4 @@ class Location extends ValueObject {
   }
 }
 
-export default Location; 
+export default Location;

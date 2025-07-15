@@ -1,10 +1,18 @@
 import { describe, it, expect } from "vitest";
 import { None, Some } from "ts-results-es";
-import { createUserRepositoryMock, createPostRepositoryMock } from "@utils/testData/mocks";
-import { ResourceNotFoundError, UnauthenticatedError } from "@application/useCases/errors";
+import {
+  createUserRepositoryMock,
+  createPostRepositoryMock,
+} from "@utils/testData/mocks";
+import { ResourceNotFoundError } from "@application/useCases/errors";
 import { AlreadyLikedPostError, SelfLikedPostError } from "@domain/errors";
 import LikePostUseCase from "@application/useCases/posts/like";
-import { createUserOne, createPostOne, createUserThree, createUserTwo } from "@utils/testData/testEntities";
+import {
+  createUserOne,
+  createPostOne,
+  createUserThree,
+  createUserTwo,
+} from "@utils/testData/testEntities";
 import { DomainEvents } from "@domain/events/DomainEvents";
 import PostLikedEvent from "@domain/events/PostLiked";
 describe("Like Post Use Case", () => {
@@ -20,9 +28,12 @@ describe("Like Post Use Case", () => {
 
     const likePost = new LikePostUseCase(mockPostRepo);
 
-    const result = await likePost.execute({
-      postId: testPost.id.value,
-    },testUser);
+    const result = await likePost.execute(
+      {
+        postId: testPost.id.value,
+      },
+      testUser,
+    );
 
     it("should add user to liked by array", () => {
       expect(testPost.likedBy.some((id) => id.equals(testUser.id))).toBe(true);
@@ -35,8 +46,8 @@ describe("Like Post Use Case", () => {
     it("should return success", () => {
       expect(result.isOk()).toBe(true);
     });
-    
-       it("mark the entity newly created entity", () => {
+
+    it("mark the entity newly created entity", () => {
       expect(DomainEvents.getMarkedEntities().length).toBe(1);
     });
     it("entity should hold the event", () => {
@@ -45,20 +56,22 @@ describe("Like Post Use Case", () => {
     });
   });
 
-
   describe("when post is not found", async () => {
     const testUser = createUserOne();
     const mockUserRepo = createUserRepositoryMock();
     mockUserRepo.findById.mockResolvedValue(Some(testUser));
 
     const mockPostRepo = createPostRepositoryMock();
-    mockPostRepo.findById.mockResolvedValue(None);  
+    mockPostRepo.findById.mockResolvedValue(None);
 
     const likePost = new LikePostUseCase(mockPostRepo);
 
-    const result = await likePost.execute({
-      postId: "nonexistentId",
-    },testUser);
+    const result = await likePost.execute(
+      {
+        postId: "nonexistentId",
+      },
+      testUser,
+    );
 
     it("should return resource not found error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(ResourceNotFoundError);
@@ -81,9 +94,12 @@ describe("Like Post Use Case", () => {
 
     const likePost = new LikePostUseCase(mockPostRepo);
 
-    const result = await likePost.execute({
-      postId: testPost.id.value,
-    },testUser);
+    const result = await likePost.execute(
+      {
+        postId: testPost.id.value,
+      },
+      testUser,
+    );
 
     it("should return self liked post error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(SelfLikedPostError);
@@ -104,11 +120,14 @@ describe("Like Post Use Case", () => {
     const mockPostRepo = createPostRepositoryMock();
     mockPostRepo.findById.mockResolvedValue(Some(testPost));
 
-      const likePost = new LikePostUseCase(mockPostRepo);
+    const likePost = new LikePostUseCase(mockPostRepo);
 
-    const result = await likePost.execute({
-      postId: testPost.id.value,
-    },testUser  );
+    const result = await likePost.execute(
+      {
+        postId: testPost.id.value,
+      },
+      testUser,
+    );
 
     it("should return already liked post error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(AlreadyLikedPostError);
@@ -118,5 +137,4 @@ describe("Like Post Use Case", () => {
       expect(mockPostRepo.save).not.toHaveBeenCalled();
     });
   });
-  
 });

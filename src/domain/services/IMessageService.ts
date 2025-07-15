@@ -6,4 +6,4 @@ interface IMessageService {
   }): Promise<void>;
 }
 
-export default IMessageService; 
+export default IMessageService;

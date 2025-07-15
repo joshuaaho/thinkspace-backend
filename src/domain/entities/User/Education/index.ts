@@ -1,6 +1,6 @@
-import { Result, Ok, Err } from 'ts-results-es';
-import ValueObject from '@domain/core/BaseValueObject';
-import { ValidationError }   from '@domain/errors';
+import { Result, Ok, Err } from "ts-results-es";
+import ValueObject from "@domain/core/BaseValueObject";
+import { ValidationError } from "@domain/errors";
 
 class Education extends ValueObject {
   private readonly _value: string;
@@ -11,15 +11,24 @@ class Education extends ValueObject {
   }
 
   public static create(education: string): Result<Education, ValidationError> {
-    if (!education || education.trim().length === 0) {
-      return Err(new ValidationError("Education information cannot be empty"));
+    const trimmedEducation = education.trim();
+    if (trimmedEducation.length < 3) {
+      return Err(
+        new ValidationError(
+          "Education information cannot have less than 3 characters",
+        ),
+      );
     }
 
-    if (education.length > 300) {
-      return Err(new ValidationError("Education information cannot exceed 300 characters"));
+    if (trimmedEducation.length > 100) {
+      return Err(
+        new ValidationError(
+          "Education information cannot exceed 100 characters",
+        ),
+      );
     }
 
-    return Ok(new Education(education));
+    return Ok(new Education(trimmedEducation));
   }
 
   get value(): string {
@@ -27,4 +36,4 @@ class Education extends ValueObject {
   }
 }
 
-export default Education; 
+export default Education;

@@ -30,14 +30,15 @@ describe("Query Posts Use Case", () => {
         {
           authorId: testPost.authorId.value,
           username: testUser.username.value,
-          profilePicture: testUser.profileImgUrl.value,
-          postId: testPost.id.value,
+          authorProfileImgUrl: testUser.profileImgUrl.value,
+          id: testPost.id.value,
           title: testPost.title.value,
           content: testPost.content.value,
-          createdAt: testPost.createdAt.toISOString(),
+          createdAt: testPost.createdAt.toString(),
           tags: testPost.tags.map((tag) => tag.value),
           likedBy: testPost.likedBy.map((userId) => userId.value),
           imgUrls: testPost.imgUrls.map((imgUrl) => imgUrl.value),
+          commentedBy: testPost.commentedBy.map((userId) => userId.value),
         },
       ]);
     });

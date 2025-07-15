@@ -1,53 +1,79 @@
-import { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
-import CreateMessage, { CreateMessageCommand } from "@application/useCases/messages/create";
+import CreateMessage, {
+  CreateMessageCommand,
+} from "@application/useCases/messages/create";
 import CONSTANTS from "@containers/constants";
 import { ToZodSchema } from "@zod";
 import { z } from "zod";
-import { ValidationError } from "@domain/errors";
-import { InvalidRequestError, ResourceNotFoundError } from "@application/useCases/errors";
 import { AuthenticatedRequest } from "@presentation/middleware/auth";
+import {
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+  NextFunction as ExpressNextFunction,
+} from "express";
+import {
+  Controller,
+  Middlewares,
+  Post,
+  Route,
+  Response,
+  SuccessResponse,
+  Body,
+  Request,
+  Security,
+  Tags,
+} from "tsoa";
+import { HTTPError } from "@presentation/middleware/errorHandler";
+
+async function customMiddleware(
+  req: ExpressRequest,
+  res: ExpressResponse,
+  next: ExpressNextFunction,
+) {
+  const schema = z.object({
+    text: z.string(),
+    recipientId: z.string(),
+  } satisfies ToZodSchema<CreateMessageCommand>);
+
+  const validationResult = schema.safeParse(req.body);
+
+  if (!validationResult.success) {
+    return next(validationResult.error);
+  }
+  return next();
+}
 
 @injectable()
-class CreateMessageController {
+@Tags("Messages")
+@Route("messages")
+@Security("bearerAuth")
+export class CreateMessageController extends Controller {
   private createMessageUseCase: CreateMessage;
 
-  constructor(@inject(CONSTANTS.CreateMessageUseCase) createMessageUseCase: CreateMessage) {
+  constructor(
+    @inject(CONSTANTS.CreateMessageUseCase) createMessageUseCase: CreateMessage,
+  ) {
+    super();
     this.createMessageUseCase = createMessageUseCase;
   }
 
-  async createMessage(req: Request, res: Response, next: NextFunction) {
-    try {
-      const schema = z.object({
-        text: z.string(),
-        recipientId: z.string(),
-      } satisfies ToZodSchema<CreateMessageCommand>);
+  @Post()
+  @Middlewares(customMiddleware)
+  @Response<HTTPError>(400, "Validation error or invalid HTTP request")
+  @Response<HTTPError>(401, "Unauthenticated")
+  @Response<HTTPError>(404, "Recipient not found")
+  @SuccessResponse("200", "Message Created Successfully")
+  async createMessage(
+    @Body() body: CreateMessageCommand,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    const data = await this.createMessageUseCase.execute(body, req.user);
 
-      const validationResult = schema.safeParse(req.body);
-
-      if (!validationResult.success) {
-        return res.status(400).json({ error: "Invalid HTTP request" });
-      }
-
-      const result = await this.createMessageUseCase.execute(
-        validationResult.data,
-        (req as AuthenticatedRequest).requestor
-      );
-
-      if (result.isErr()) {
-        if (result.error instanceof ValidationError || result.error instanceof InvalidRequestError) {
-          return res.status(400).json({ error: result.error.message });
-        }
-        if (result.error instanceof ResourceNotFoundError) {
-          return res.status(404).json({ error: result.error.message });
-        }
-      }
-
-      return res.status(200).json();
-    } catch (error) {
-      next(error);
+    if (data.isErr()) {
+      throw data.error;
     }
+
+    this.setStatus(200);
+    return;
   }
 }
-
-export default CreateMessageController;

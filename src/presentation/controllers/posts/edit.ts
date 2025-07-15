@@ -1,62 +1,95 @@
-import { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
 import EditPost, { EditPostCommand } from "@application/useCases/posts/edit";
 import CONSTANTS from "@containers/constants";
 import { z } from "zod";
 import { ToZodSchema } from "@zod";
-import { ResourceNotFoundError, UnauthorizedError } from "@application/useCases/errors";
-import { ValidationError } from "@domain/errors";
+
 import { AuthenticatedRequest } from "@presentation/middleware/auth";
+import {
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+  NextFunction as ExpressNextFunction,
+} from "express";
+import {
+  Controller,
+  Middlewares,
+  Patch,
+  Route,
+  Response,
+  SuccessResponse,
+  Path,
+  Request,
+  Security,
+  Body,
+  Tags,
+} from "tsoa";
+import { HTTPError } from "@presentation/middleware/errorHandler";
+
+async function customMiddleware(
+  req: ExpressRequest,
+  res: ExpressResponse,
+  next: ExpressNextFunction,
+) {
+  const schema = z.object({
+    title: z.string().optional(),
+    content: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+    imgUrls: z.array(z.string().url()).optional(),
+    postId: z.string(),
+  } satisfies ToZodSchema<EditPostCommand>);
+
+  const validationResult = schema.safeParse({
+    ...req.body,
+    postId: req.params.postId,
+  });
+
+  if (!validationResult.success) {
+    return next(validationResult.error);
+  }
+  return next();
+}
 
 @injectable()
-class EditPostController {
+@Tags("Posts")
+@Route("posts")
+@Security("bearerAuth")
+export class EditPostController extends Controller {
   private editPostUseCase: EditPost;
 
-constructor(@inject(CONSTANTS.EditPostUseCase) editPostUseCase: EditPost) {
+  constructor(@inject(CONSTANTS.EditPostUseCase) editPostUseCase: EditPost) {
+    super();
     this.editPostUseCase = editPostUseCase;
   }
 
-  async editPost(req: Request, res: Response, next: NextFunction) {
-    try {
-      const schema = z.object({
-        title: z.string().optional(),
-        content: z.string().optional(),
-        tags: z.array(z.string()).optional(),
-        imgUrls: z.array(z.string().url()).optional(),
-        postId: z.string(),
-      } satisfies ToZodSchema<EditPostCommand>);
+  @Patch("/{postId}")
+  @Middlewares(customMiddleware)
+  @Response<HTTPError>(400, "Validation error or invalid HTTP request")
+  @Response<HTTPError>(401, "Unauthenticated")
+  @Response<HTTPError>(403, "Unauthorized")
+  @Response<HTTPError>(404, "Post not found")
+  @SuccessResponse("200", "Post Edited Successfully")
+  async editPost(
+    @Path() postId: string,
+    @Body() updates: EditPostUpdates,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    const data = await this.editPostUseCase.execute(
+      { ...updates, postId },
+      req.user,
+    );
 
-      const validationResult = schema.safeParse({
-        ...req.body,
-        postId: req.params.postId,
-      });
-
-      if (!validationResult.success) {
-        return res.status(400).json({ error: "Invalid HTTP request" });
-      }
-
-      const result = await this.editPostUseCase.execute(
-        validationResult.data,
-        (req as AuthenticatedRequest).requestor
-      );
-
-      if (result.isErr()) {
-        if (result.error instanceof ResourceNotFoundError) {
-          return res.status(404).json({ error: result.error.message });
-        }
-        if (result.error instanceof UnauthorizedError) {
-          return res.status(403).json({ error: result.error.message });
-        }
-        if (result.error instanceof ValidationError) {
-          return res.status(400).json({ error: result.error.message });
-        }
-      }
-
-      return res.status(200).json();
-    } catch (error) {
-      next(error);
+    if (data.isErr()) {
+      throw data.error;
     }
+
+    this.setStatus(200);
+    return;
   }
 }
 
-export default EditPostController;
+interface EditPostUpdates {
+  title?: string;
+  content?: string;
+  tags?: string[];
+  imgUrls?: string[];
+}

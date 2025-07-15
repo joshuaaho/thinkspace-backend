@@ -16,7 +16,7 @@ describe("Password", () => {
       const result = Password.create({
         value: "Abc12!111",
       }).unwrap();
-      
+
       const someError = await result.verify("Abc12!111");
       expect(someError.isOk()).toBe(true);
     });

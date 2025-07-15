@@ -12,10 +12,19 @@ import IMessageRepository from "@domain/repositories/IMessageRepository";
 import CONSTANTS from "@containers/constants";
 
 export function bindRepositories(container: Container) {
-  // Repositories
-  container.bind<IUserRepository>(CONSTANTS.UserRepository).to(MongoUserRepository);
-  container.bind<INotificationRepository>(CONSTANTS.NotificationRepository).to(MongoNotificationRepository);
-  container.bind<IPostRepository>(CONSTANTS.PostRepository).to(MongoPostRepository);
-  container.bind<ICommentRepository>(CONSTANTS.CommentRepository).to(MongoCommentRepository);
-  container.bind<IMessageRepository>(CONSTANTS.MessageRepository).to(MongoMessageRepository);
-} 
+  container
+    .bind<IUserRepository>(CONSTANTS.UserRepository)
+    .to(MongoUserRepository);
+  container
+    .bind<INotificationRepository>(CONSTANTS.NotificationRepository)
+    .to(MongoNotificationRepository);
+  container
+    .bind<IPostRepository>(CONSTANTS.PostRepository)
+    .to(MongoPostRepository);
+  container
+    .bind<ICommentRepository>(CONSTANTS.CommentRepository)
+    .to(MongoCommentRepository);
+  container
+    .bind<IMessageRepository>(CONSTANTS.MessageRepository)
+    .to(MongoMessageRepository);
+}

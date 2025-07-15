@@ -1,4 +1,3 @@
-import { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
 import CreateComment, {
   CreateCommentCommand,
@@ -6,61 +5,76 @@ import CreateComment, {
 import CONSTANTS from "@containers/constants";
 import { z } from "zod";
 import { ToZodSchema } from "@zod";
-import {
-  ResourceNotFoundError,
-  InvalidRequestError,
-} from "@application/useCases/errors";
+
 import { AuthenticatedRequest } from "@presentation/middleware/auth";
-import { ValidationError } from "@domain/errors";
+import {
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+  NextFunction as ExpressNextFunction,
+} from "express";
+import {
+  Controller,
+  Middlewares,
+  Post,
+  Route,
+  Response,
+  SuccessResponse,
+  Body,
+  Request,
+  Security,
+  Tags,
+} from "tsoa";
+import { HTTPError } from "@presentation/middleware/errorHandler";
+
+async function customMiddleware(
+  req: ExpressRequest,
+  res: ExpressResponse,
+  next: ExpressNextFunction,
+) {
+  const schema = z.object({
+    content: z.string(),
+    postId: z.string(),
+    parentCommentId: z.string().optional(),
+  } satisfies ToZodSchema<CreateCommentCommand>);
+
+  const validationResult = schema.safeParse(req.body);
+  if (!validationResult.success) {
+    return next(validationResult.error);
+  }
+  return next();
+}
 
 @injectable()
-class CreateCommentController {
+@Tags("Comments")
+@Route("comments")
+@Security("bearerAuth")
+export class CreateCommentController extends Controller {
   private createCommentUseCase: CreateComment;
 
   constructor(
-    @inject(CONSTANTS.CreateCommentUseCase) createCommentUseCase: CreateComment
+    @inject(CONSTANTS.CreateCommentUseCase) createCommentUseCase: CreateComment,
   ) {
+    super();
     this.createCommentUseCase = createCommentUseCase;
   }
 
-  async create(req: Request, res: Response, next: NextFunction) {
-    try {
-      const schema = z.object({
-        content: z.string(),
-        postId: z.string(),
-        parentCommentId: z.string().optional(),
-      } satisfies ToZodSchema<CreateCommentCommand>);
+  @Post()
+  @Middlewares(customMiddleware)
+  @Response<HTTPError>(400, "Validation error or invalid HTTP request")
+  @Response<HTTPError>(401, "Unauthenticated")
+  @Response<HTTPError>(404, "Corresponding post or parent comment not found")
+  @SuccessResponse("201", "Comment Created Successfully")
+  async create(
+    @Body() body: CreateCommentCommand,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    const data = await this.createCommentUseCase.execute(body, req.user);
 
-      const validationResult = schema.safeParse({
-        ...req.body,
-      });
-      if (!validationResult.success) {
-        return res.status(400).json({ error: "Invalid HTTP request" });
-      }
-
-      const useCaseResult = await this.createCommentUseCase.execute(
-        validationResult.data,
-        (req as AuthenticatedRequest).requestor
-      );
-
-      if (useCaseResult.isErr()) {
-        if (useCaseResult.error instanceof ResourceNotFoundError) {
-          return res.status(404).json({ error: useCaseResult.error.message });
-        }
-
-        if (
-          useCaseResult.error instanceof ValidationError ||
-          useCaseResult.error instanceof InvalidRequestError
-        ) {
-          return res.status(400).json({ error: useCaseResult.error.message });
-        }
-      }
-
-      return res.status(201).json({ message: "Comment created successfully" });
-    } catch (error) {
-      next(error);
+    if (data.isErr()) {
+      throw data.error;
     }
+
+    this.setStatus(201);
+    return { message: "Comment created successfully" };
   }
 }
-
-export default CreateCommentController;

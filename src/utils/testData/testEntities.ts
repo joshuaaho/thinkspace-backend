@@ -31,7 +31,6 @@ export const createUserFour = () => {
     email: Email.create("userFour@example.com").unwrap(),
     password: Password.create({ value: "SecurePass123!" }).unwrap(),
     refreshToken: "testRefreshToken",
-   
   });
 };
 
@@ -41,7 +40,6 @@ export const createUserTwo = () => {
     username: UserName.create("userTwo").unwrap(),
     email: Email.create("userTwo@example.com").unwrap(),
     password: Password.create({ value: "SecurePass123!" }).unwrap(),
-
   });
 };
 
@@ -70,13 +68,13 @@ export const postOneUpdates = {
   title: "Updated post one title",
   tags: ["newTag1", "newTag2"],
   imgUrls: ["https://example.com/image1.jpg", "https://example.com/image2.jpg"],
-}
+};
 
 export const invalidPostOneUpdates = {
   title: "a".repeat(101),
   tags: ["newTag1", "newTag2", "newTag3", "newTag4", "newTag5", "newTag6"],
   imgUrls: ["invalidurl"],
-}
+};
 
 export const createPostTwo = () => {
   return Post.create({
@@ -94,7 +92,10 @@ export const createPostThree = () => {
     content: PostContent.create("Post three content").unwrap(),
     title: Title.create("Typescript Programming").unwrap(),
     authorId: EntityId.create("userOneId"),
-    tags: [Tag.create("typescript").unwrap(), Tag.create("programming").unwrap()],
+    tags: [
+      Tag.create("typescript").unwrap(),
+      Tag.create("programming").unwrap(),
+    ],
     createdAt: new Date("2024-01-25T10:00:00Z"),
   }).unwrap();
 };
@@ -110,7 +111,6 @@ export const createPostFour = () => {
     likedBy: [EntityId.create("userTwoId"), EntityId.create("userOneId")],
   }).unwrap();
 };
-
 
 export const createCommentOne = () => {
   return Comment.create({
@@ -128,7 +128,6 @@ export const createCommentTwo = () => {
     content: CommentContent.create("Comment two content").unwrap(),
     authorId: EntityId.create("userTwoId"),
     postId: EntityId.create("postOneId"),
-
   });
 };
 
@@ -162,8 +161,6 @@ export const createCommentOneReplyReply = () => {
   });
 };
 
-
-
 export const createMessageOne = () => {
   return Message.create({
     id: EntityId.create("messageOneId"),
@@ -173,4 +170,3 @@ export const createMessageOne = () => {
     receiverId: EntityId.create("userTwoId"),
   });
 };
-

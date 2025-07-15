@@ -11,4 +11,4 @@ class PostDeleted implements IDomainEvent {
   }
 }
 
-export default PostDeleted; 
+export default PostDeleted;

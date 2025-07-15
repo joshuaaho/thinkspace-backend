@@ -3,7 +3,10 @@ import CONSTANTS from "@containers/constants";
 import IUserRepository from "@domain/repositories/IUserRepository";
 import User from "@domain/entities/User";
 import { Result, Ok, Err } from "ts-results-es";
-import { ResourceNotFoundError, InvalidRequestError } from "@application/useCases/errors";
+import {
+  ResourceNotFoundError,
+  InvalidRequestError,
+} from "@application/useCases/errors";
 
 export type FollowCommand = {
   userId: string;
@@ -13,19 +16,23 @@ export type FollowCommand = {
 class Follow {
   private userRepo: IUserRepository;
 
-  constructor(
-    @inject(CONSTANTS.UserRepository) userRepo: IUserRepository
-  ) {
+  constructor(@inject(CONSTANTS.UserRepository) userRepo: IUserRepository) {
     this.userRepo = userRepo;
   }
 
   public async execute(
     command: FollowCommand,
-    requestor: User
+    requestor: User,
   ): Promise<Result<void, ResourceNotFoundError | InvalidRequestError>> {
-    const userToFollow = (await this.userRepo.findById(command.userId)).unwrap();
+    const userToFollowOption = await this.userRepo.findById(command.userId);
+
+    if (userToFollowOption.isNone()) {
+      return Err(new ResourceNotFoundError("User to follow not found"));
+    }
+
+    const userToFollow = userToFollowOption.value;
     const result = userToFollow.acceptFollowFromUser(requestor.id);
-    
+
     if (result.isErr()) {
       return result;
     }
@@ -35,4 +42,4 @@ class Follow {
   }
 }
 
-export default Follow; 
+export default Follow;

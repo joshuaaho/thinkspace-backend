@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import request from "supertest";
 import app from "@index";
-import container from "@containers/index";
+import { iocContainer } from "@containers/index";
 import IUserRepository from "@domain/repositories/IUserRepository";
 import ICommentRepository from "@domain/repositories/ICommentRepository";
 import CONSTANTS from "@containers/constants";
@@ -14,14 +14,10 @@ import {
   createCommentOneReplyReply,
 } from "@utils/testData/testEntities";
 import { createAccessToken } from "@utils/testData/infastructure";
-import Comment from "@domain/entities/Comment";
-import Content from "@domain/entities/Comment/Content";
 import IPostRepository from "@domain/repositories/IPostRepository";
 import { None } from "ts-results-es";
 
 describe("Delete Comment Route", () => {
-
-
   describe("when user is not authenticated", async () => {
     async function sendRequest() {
       return request(app).delete(`/comments/somecommentid`);
@@ -38,11 +34,11 @@ describe("Delete Comment Route", () => {
     const testUser = createUserTwo();
     const testComment = createCommentOne();
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
-      const commentRepository = container.get<ICommentRepository>(
-        CONSTANTS.CommentRepository
+      const commentRepository = iocContainer.get<ICommentRepository>(
+        CONSTANTS.CommentRepository,
       );
       await userRepository.save(testUser);
       await commentRepository.save(testComment);
@@ -67,8 +63,8 @@ describe("Delete Comment Route", () => {
       await initializeData();
       await sendRequest();
 
-      const commentRepository = container.get<ICommentRepository>(
-        CONSTANTS.CommentRepository
+      const commentRepository = iocContainer.get<ICommentRepository>(
+        CONSTANTS.CommentRepository,
       );
 
       const comment = await commentRepository.findById(testComment.id.value);
@@ -79,8 +75,8 @@ describe("Delete Comment Route", () => {
   describe("when deleting a non existent comment", async () => {
     const testUser = createUserOne();
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
       await userRepository.save(testUser);
     }
@@ -109,18 +105,17 @@ describe("Delete Comment Route", () => {
     const commentOneReplyReply = createCommentOneReplyReply();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
-      const commentRepository = container.get<ICommentRepository>(
-        CONSTANTS.CommentRepository
-      );
-
-      const postRepository = container.get<IPostRepository>(
-        CONSTANTS.PostRepository
+      const commentRepository = iocContainer.get<ICommentRepository>(
+        CONSTANTS.CommentRepository,
       );
 
-      // Create parent comment
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
+      );
+
       await commentRepository.save(commentOne);
       await commentRepository.save(commentOneReply);
       await commentRepository.save(commentOneReplyReply);
@@ -145,25 +140,25 @@ describe("Delete Comment Route", () => {
       await initializeData();
       await sendRequest();
 
-      const commentRepository = container.get<ICommentRepository>(
-        CONSTANTS.CommentRepository
+      const commentRepository = iocContainer.get<ICommentRepository>(
+        CONSTANTS.CommentRepository,
       );
 
       await vi.waitFor(
         async () => {
           expect(
-            await commentRepository.findById(commentOneReply.id.value)
+            await commentRepository.findById(commentOneReply.id.value),
           ).toBe(None);
         },
         {
-          timeout: 10000, // default is 1000
-        }
+          timeout: 10000,
+        },
       );
     });
 
     it("should delete nested reply", async () => {
-      const commentRepository = container.get<ICommentRepository>(
-        CONSTANTS.CommentRepository
+      const commentRepository = iocContainer.get<ICommentRepository>(
+        CONSTANTS.CommentRepository,
       );
 
       await initializeData();
@@ -173,18 +168,18 @@ describe("Delete Comment Route", () => {
       await vi.waitFor(
         async () => {
           expect(
-            await commentRepository.findById(commentOneReplyReply.id.value)
+            await commentRepository.findById(commentOneReplyReply.id.value),
           ).toBe(None);
         },
         {
-          timeout: 10000, // default is 1000
-        }
+          timeout: 10000,
+        },
       );
     });
 
     it("should delete main comment", async () => {
-      const commentRepository = container.get<ICommentRepository>(
-        CONSTANTS.CommentRepository
+      const commentRepository = iocContainer.get<ICommentRepository>(
+        CONSTANTS.CommentRepository,
       );
 
       await initializeData();

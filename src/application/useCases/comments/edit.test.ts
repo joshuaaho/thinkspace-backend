@@ -11,8 +11,7 @@ import {
 } from "@utils/testData/testEntities";
 import EditCommentUseCase from "@application/useCases/comments/edit";
 import {
-  ResourceNotFoundError,  
-  UnauthenticatedError,
+  ResourceNotFoundError,
   UnauthorizedError,
 } from "@application/useCases/errors";
 import { ValidationError } from "@domain/errors";
@@ -29,19 +28,19 @@ describe("Edit Comment Use Case", () => {
     const mockUserRepo = createUserRepositoryMock();
     mockUserRepo.findById.mockResolvedValue(Some(testUser));
 
-    const editCommentUseCase = new EditCommentUseCase(
-      mockCommentRepo,
+    const editCommentUseCase = new EditCommentUseCase(mockCommentRepo);
 
+    const result = await editCommentUseCase.execute(
+      {
+        commentId: testComment.id.value,
+        content: "updated content",
+      },
+      testUser,
     );
-
-    const result = await editCommentUseCase.execute({
-      commentId: testComment.id.value,
-      content: "updated content",
-    },testUser);
 
     it("should update comment content", () => {
       expect(
-        testComment.content.equals(Content.create("updated content").unwrap())
+        testComment.content.equals(Content.create("updated content").unwrap()),
       ).toBe(true);
     });
 
@@ -54,8 +53,6 @@ describe("Edit Comment Use Case", () => {
     });
   });
 
-
-
   describe("when comment is not found", async () => {
     const testUser = createUserOne();
     const mockCommentRepo = createCommentRepositoryMock();
@@ -64,15 +61,15 @@ describe("Edit Comment Use Case", () => {
     const mockUserRepo = createUserRepositoryMock();
     mockUserRepo.findById.mockResolvedValue(Some(testUser));
 
-    const editCommentUseCase = new EditCommentUseCase(
-      mockCommentRepo,
+    const editCommentUseCase = new EditCommentUseCase(mockCommentRepo);
 
+    const result = await editCommentUseCase.execute(
+      {
+        commentId: "nonexistentCommentId",
+        content: "updated content",
+      },
+      testUser,
     );
-
-    const result = await editCommentUseCase.execute({
-      commentId: "nonexistentCommentId",
-      content: "updated content",
-    },testUser);
 
     it("should return resource not found error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(ResourceNotFoundError);
@@ -93,15 +90,15 @@ describe("Edit Comment Use Case", () => {
     const mockUserRepo = createUserRepositoryMock();
     mockUserRepo.findById.mockResolvedValue(Some(testUser));
 
-    const editCommentUseCase = new EditCommentUseCase(
-      mockCommentRepo,
+    const editCommentUseCase = new EditCommentUseCase(mockCommentRepo);
 
+    const result = await editCommentUseCase.execute(
+      {
+        commentId: testComment.id.value,
+        content: "updated content",
+      },
+      testUser,
     );
-
-    const result = await editCommentUseCase.execute({
-      commentId: testComment.id.value,
-      content: "updated content",
-    },testUser);
 
     it("should return unauthorized error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(UnauthorizedError);
@@ -122,15 +119,15 @@ describe("Edit Comment Use Case", () => {
     const mockUserRepo = createUserRepositoryMock();
     mockUserRepo.findById.mockResolvedValue(Some(testUser));
 
-    const editCommentUseCase = new EditCommentUseCase(
-      mockCommentRepo,
+    const editCommentUseCase = new EditCommentUseCase(mockCommentRepo);
 
+    const result = await editCommentUseCase.execute(
+      {
+        commentId: testComment.id.value,
+        content: "a".repeat(1001),
+      },
+      testUser,
     );
-
-    const result = await editCommentUseCase.execute({
-      commentId: testComment.id.value,
-      content: "a".repeat(1001), // Too long content
-      },testUser);
 
     it("should return validation error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(ValidationError);

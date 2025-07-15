@@ -6,10 +6,15 @@ import MongoUserMapper from "@infrastructure/mappers/MongoUserMapper";
 
 import { None, Some } from "ts-results-es";
 import db from "@infrastructure/repositories/mongodb/MongoClient";
-import IUserRepository, { UserQueryOptions } from "@domain/repositories/IUserRepository";
+import IUserRepository, {
+  UserQueryOptions,
+} from "@domain/repositories/IUserRepository";
 
 @injectable()
-class MongoUserRepository extends MongoBaseRepository<User> implements IUserRepository {
+class MongoUserRepository
+  extends MongoBaseRepository<User>
+  implements IUserRepository
+{
   constructor() {
     super(db.collection("users"), new MongoUserMapper());
   }
@@ -44,8 +49,6 @@ class MongoUserRepository extends MongoBaseRepository<User> implements IUserRepo
     limit = 10,
     username,
   }: UserQueryOptions): Promise<User[]> {
-  
-
     const users = await this.collectionInstance
       .find({
         ...(username ? { username: { $regex: username, $options: "i" } } : {}),

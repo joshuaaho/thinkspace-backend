@@ -24,10 +24,10 @@ class RegisterUseCase {
   }
 
   public async execute(
-    request: RegisterCommand
+    request: RegisterCommand,
   ): Promise<Result<void, ValidationError | ConflictError>> {
     const someUserUsername = await this.userRepo.findByUsername(
-      request.username
+      request.username,
     );
     if (someUserUsername.isSome()) {
       return Err(new ConflictError("User has been taken"));

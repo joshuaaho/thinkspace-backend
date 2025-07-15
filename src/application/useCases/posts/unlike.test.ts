@@ -1,10 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { None, Some } from "ts-results-es";
-import { createUserRepositoryMock, createPostRepositoryMock } from "@utils/testData/mocks";
-import { ResourceNotFoundError, UnauthenticatedError } from "@application/useCases/errors";
+import {
+  createUserRepositoryMock,
+  createPostRepositoryMock,
+} from "@utils/testData/mocks";
+import { ResourceNotFoundError } from "@application/useCases/errors";
 import { NotLikedPostError } from "@domain/errors";
 import UnlikePostUseCase from "@application/useCases/posts/unlike";
-import { createUserOne, createPostOne, createUserTwo } from "@utils/testData/testEntities";
+import {
+  createUserOne,
+  createPostOne,
+  createUserTwo,
+} from "@utils/testData/testEntities";
 
 describe("Unlike Post Use Case", () => {
   describe("when unliking a post", async () => {
@@ -19,9 +26,12 @@ describe("Unlike Post Use Case", () => {
 
     const unlikePost = new UnlikePostUseCase(mockPostRepo);
 
-    const result = await unlikePost.execute({
-      postId: testPost.id.value,
-    },testUser);
+    const result = await unlikePost.execute(
+      {
+        postId: testPost.id.value,
+      },
+      testUser,
+    );
 
     it("should remove user from liked by array", () => {
       expect(testPost.likedBy.some((id) => id.equals(testUser.id))).toBe(false);
@@ -36,8 +46,6 @@ describe("Unlike Post Use Case", () => {
     });
   });
 
-
-
   describe("when post is not found", async () => {
     const testUser = createUserOne();
     const mockUserRepo = createUserRepositoryMock();
@@ -48,9 +56,12 @@ describe("Unlike Post Use Case", () => {
 
     const unlikePost = new UnlikePostUseCase(mockPostRepo);
 
-    const result = await unlikePost.execute({
-      postId: "nonexistentId",
-    },testUser);
+    const result = await unlikePost.execute(
+      {
+        postId: "nonexistentId",
+      },
+      testUser,
+    );
 
     it("should return resource not found error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(ResourceNotFoundError);
@@ -73,9 +84,12 @@ describe("Unlike Post Use Case", () => {
 
     const unlikePost = new UnlikePostUseCase(mockPostRepo);
 
-    const result = await unlikePost.execute({
-      postId: testPost.id.value,
-    },testUser);
+    const result = await unlikePost.execute(
+      {
+        postId: testPost.id.value,
+      },
+      testUser,
+    );
 
     it("should return not liked post error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(NotLikedPostError);

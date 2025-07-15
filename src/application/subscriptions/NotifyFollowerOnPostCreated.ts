@@ -19,7 +19,7 @@ class NotifyFollowerOnPostCreated implements IHandle {
     @inject(CONSTANTS.NotificationService)
     notificationService: INotificationService,
     @inject(CONSTANTS.NotificationRepository)
-    notificationRepo: INotificationRepository
+    notificationRepo: INotificationRepository,
   ) {
     this.userRepo = userRepo;
     this.notificationService = notificationService;
@@ -33,7 +33,6 @@ class NotifyFollowerOnPostCreated implements IHandle {
   public async onPostCreated(event: PostCreated): Promise<void> {
     const { post } = event;
 
-    // Get the post author
     const author = (await this.userRepo.findById(post.authorId.value)).unwrap();
 
     const notifications = author.followedBy.map((followerId) =>
@@ -44,17 +43,15 @@ class NotifyFollowerOnPostCreated implements IHandle {
         isRead: false,
         resourceId: post.id.value,
         redirectToResourceType: "posts",
-      })
+      }),
     );
 
-    // Save all notifications to the database
     await Promise.all(
       notifications.map((notification) =>
-        this.notificationRepo.save(notification)
-      )
+        this.notificationRepo.save(notification),
+      ),
     );
 
-    // Send all notifications through the notification service
     await this.notificationService.sendNotifications(notifications);
   }
 }

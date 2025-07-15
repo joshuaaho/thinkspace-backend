@@ -1,6 +1,5 @@
 interface IFileUploadService {
-
   getUploadUrl(): Promise<string>;
 }
 
-export default IFileUploadService; 
+export default IFileUploadService;

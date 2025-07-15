@@ -11,4 +11,4 @@ class PostCreated implements IDomainEvent {
   }
 }
 
-export default PostCreated; 
+export default PostCreated;

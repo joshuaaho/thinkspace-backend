@@ -9,7 +9,9 @@ import ICommentRepository from "@domain/repositories/ICommentRepository";
 class DeleteCommentsOnPostDeleted implements IHandle {
   private commentRepo: ICommentRepository;
 
-  constructor(@inject(CONSTANTS.CommentRepository) commentRepo: ICommentRepository) {
+  constructor(
+    @inject(CONSTANTS.CommentRepository) commentRepo: ICommentRepository,
+  ) {
     this.commentRepo = commentRepo;
   }
 

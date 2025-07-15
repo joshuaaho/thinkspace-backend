@@ -1,10 +1,6 @@
-
 import { inject, injectable } from "inversify";
 import CONSTANTS from "@containers/constants";
 import IFileUploadService from "@application/services/IFileUploadService";
-
-
-
 
 export type CreateFileUploadUrlResponse = {
   uploadUrl: string;
@@ -15,17 +11,14 @@ class CreateFileUploadUrl {
   private fileUploadService: IFileUploadService;
 
   constructor(
-    @inject(CONSTANTS.FileUploadService) fileUploadService: IFileUploadService
+    @inject(CONSTANTS.FileUploadService) fileUploadService: IFileUploadService,
   ) {
     this.fileUploadService = fileUploadService;
   }
 
-  public async execute(
-  ): Promise<CreateFileUploadUrlResponse> {
- 
-      const uploadUrl = await this.fileUploadService.getUploadUrl();
-      return { uploadUrl };
-    
+  public async execute(): Promise<CreateFileUploadUrlResponse> {
+    const uploadUrl = await this.fileUploadService.getUploadUrl();
+    return { uploadUrl };
   }
 }
 

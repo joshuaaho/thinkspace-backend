@@ -1,7 +1,7 @@
 import { inject, injectable } from "inversify";
 import CONSTANTS from "@containers/constants";
 import IUserRepository from "@domain/repositories/IUserRepository";
-import User from "@domain/entities/User";
+import User, { ThemePreference } from "@domain/entities/User";
 
 export type GetMeResponse = {
   id: string;
@@ -13,7 +13,7 @@ export type GetMeResponse = {
   interest?: string;
   location?: string;
   profileImgUrl: string;
-  themePreference: string;
+  themePreference: ThemePreference;
   followedBy: string[];
 };
 
@@ -21,17 +21,11 @@ export type GetMeResponse = {
 class GetMe {
   private userRepo: IUserRepository;
 
-  constructor(
-    @inject(CONSTANTS.UserRepository) userRepo: IUserRepository
-  ) {
+  constructor(@inject(CONSTANTS.UserRepository) userRepo: IUserRepository) {
     this.userRepo = userRepo;
   }
 
-  public async execute(
-    requestor: User
-  ): Promise<GetMeResponse> {
-
-
+  public async execute(requestor: User): Promise<GetMeResponse> {
     const user = requestor;
 
     return {

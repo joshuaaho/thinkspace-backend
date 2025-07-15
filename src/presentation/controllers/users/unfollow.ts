@@ -1,58 +1,76 @@
-// import { NextFunction, Request, Response } from "express";
-// import { inject, injectable } from "inversify";
-// import SERVICES from "@utils/containers/containerServices";
-// import { z } from "zod";
-// import { ToZodSchema } from "@zod";
-// import {
-//   ResourceNotFoundError,
-//   InvalidRequestError,
-// } from "@application/useCases/errors";
-// import { AuthenticatedRequest } from "@presentation/middleware/auth";
-// import Unfollow, { UnfollowCommand } from "@application/useCases/users/unfollow";
+import { inject, injectable } from "inversify";
+import CONSTANTS from "@containers/constants";
+import { z } from "zod";
+import { ToZodSchema } from "@zod";
 
-// @injectable()
-// class UnfollowController {
-//   private unfollowUseCase: Unfollow;
+import Unfollow, {
+  UnfollowCommand,
+} from "@application/useCases/users/unfollow";
+import {
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+  NextFunction as ExpressNextFunction,
+} from "express";
+import {
+  Controller,
+  Post,
+  Route,
+  Response,
+  SuccessResponse,
+  Security,
+  Request,
+  Path,
+  Middlewares,
+  Tags,
+} from "tsoa";
+import { HTTPError } from "@presentation/middleware/errorHandler";
+import { AuthenticatedRequest } from "@presentation/middleware/auth";
 
-//   constructor(
-//     @inject(SERVICES.UnfollowUserUseCase) unfollowUseCase: Unfollow
-//   ) {
-//     this.unfollowUseCase = unfollowUseCase;
-//   }
+async function customMiddleware(
+  req: ExpressRequest,
+  res: ExpressResponse,
+  next: ExpressNextFunction,
+) {
+  const schema = z.object({
+    userId: z.string().min(1, "User ID is required"),
+  } satisfies ToZodSchema<UnfollowCommand>);
 
-//   async handleUnfollow(req: Request, res: Response, next: NextFunction) {
-//     try {
-//       const schema = z.object({
-//         userId: z.string(),
-//       } satisfies ToZodSchema<UnfollowCommand>);
+  const validationResult = schema.safeParse({
+    userId: req.params.userId,
+  });
 
-//       const validationResult = schema.safeParse({
-//         userId: req.params.userId,
-//       });
+  if (!validationResult.success) {
+    return next(validationResult.error);
+  }
+  return next();
+}
 
-//       if (!validationResult.success) {
-//         return res.status(400).json({ error: "Invalid request" });
-//       }
+@injectable()
+@Tags("Users")
+@Route("users")
+export class UnfollowController extends Controller {
+  private unfollowUseCase: Unfollow;
 
-//       const result = await this.unfollowUseCase.execute(
-//         validationResult.data,
-//         (req as AuthenticatedRequest).requestor
-//       );
+  constructor(
+    @inject(CONSTANTS.UnfollowUserUseCase) unfollowUseCase: Unfollow,
+  ) {
+    super();
+    this.unfollowUseCase = unfollowUseCase;
+  }
 
-//       if (result.isErr()) {
-//         if (result.error instanceof ResourceNotFoundError) {
-//           return res.status(404).json({ error: result.error.message });
-//         }
-//         if (result.error instanceof InvalidRequestError) {
-//           return res.status(400).json({ error: result.error.message });
-//         }
-//       }
+  @Post("/{userId}/unfollow")
+  @Security("bearerAuth")
+  @Middlewares(customMiddleware)
+  @Response<HTTPError>(400, "Invalid Request")
+  @Response<HTTPError>(404, "User Not Found")
+  @SuccessResponse("200", "Successfully unfollowed user")
+  async unfollow(@Path() userId: string, @Request() req: AuthenticatedRequest) {
+    const result = await this.unfollowUseCase.execute({ userId }, req.user);
 
-//       return res.status(200).json();
-//     } catch (error) {
-//       next(error);
-//     }
-//   }
-// }
+    if (result.isErr()) {
+      throw result.error;
+    }
 
-// export default UnfollowController; 
+    this.setStatus(200);
+  }
+}

@@ -22,7 +22,7 @@ it("should create a user", () => {
   const work = Work.create("Software Engineer").unwrap();
   const bio = Bio.create("I am a software engineer").unwrap();
   const education = Education.create(
-    "Bachelor of Science in Computer Science"
+    "Bachelor of Science in Computer Science",
   ).unwrap();
   const interest = Interest.create("Software Development").unwrap();
   const location = Location.create("New York, NY").unwrap();
@@ -69,9 +69,8 @@ it("should create user with correct default values", () => {
   });
 
   expect(user.themePreference).toEqual("light");
-  expect(
-    user.profileImgUrl.equals(
-      Url.create(process.env.DEFAULT_PROFILE_IMG_URL as string).unwrap()
-    )
-  ).toBe(true);
+  expect(user.profileImgUrl.value).toBeOneOf([
+    "https://thinkspace1506.s3.us-east-1.amazonaws.com/70865fc6-d842-4993-9f80-de1223d40987.jpg",
+    "https://thinkspace1506.s3.us-east-1.amazonaws.com/165e8069-2728-482b-a939-462a8c24af66.jpg",
+  ]);
 });

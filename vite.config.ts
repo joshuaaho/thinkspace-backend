@@ -1,11 +1,12 @@
 import { defineConfig } from "vite";
 
 import tsconfigPaths from "vite-tsconfig-paths";
-import { configDefaults } from "vitest/config";
 
 export default defineConfig({
   plugins: [tsconfigPaths()],
-
+  server: {
+    host: true,
+  },
   test: {
     fileParallelism: false,
     workspace: [
@@ -34,7 +35,6 @@ export default defineConfig({
         },
       },
     ],
-    testTimeout: 10000000,
     environment: "node",
     hookTimeout: 10000000,
     coverage: {

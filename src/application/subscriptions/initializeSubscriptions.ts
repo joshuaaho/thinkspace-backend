@@ -1,4 +1,4 @@
-import container from "@containers/index";
+import { iocContainer } from "@containers/index";
 import CONSTANTS from "@containers/constants";
 import SendMessageOnMessageCreated from "@application/subscriptions/SendMessageOnMessageCreated";
 import NotifyFollowerOnPostCreated from "@application/subscriptions/NotifyFollowerOnPostCreated";
@@ -11,48 +11,45 @@ import NotifyCommentAuthorOnCommentLiked from "@application/subscriptions/Notify
 import NotifyPostAuthorOnCommentCreated from "@application/subscriptions/NotifyPostAuthorOnCommentCreated";
 
 export const initializeSubscriptions = () => {
-;
   const deleteRepliesOnCommentDeleted =
-    container.get<DeleteRepliesOnCommentDeleted>(
-      CONSTANTS.DeleteRepliesOnCommentDeleted
+    iocContainer.get<DeleteRepliesOnCommentDeleted>(
+      CONSTANTS.DeleteRepliesOnCommentDeleted,
     );
 
   const notifyPostAuthorOnPostLiked =
-    container.get<NotifyPostAuthorOnPostLiked>(
-      CONSTANTS.NotifyPostAuthorOnPostLiked
+    iocContainer.get<NotifyPostAuthorOnPostLiked>(
+      CONSTANTS.NotifyPostAuthorOnPostLiked,
     );
   const deleteCommentsOnPostDeleted =
-    container.get<DeleteCommentsOnPostDeleted>(
-      CONSTANTS.DeleteCommentsOnPostDeleted
+    iocContainer.get<DeleteCommentsOnPostDeleted>(
+      CONSTANTS.DeleteCommentsOnPostDeleted,
     );
-
 
   const sendMessageOnMessageCreated =
-    container.get<SendMessageOnMessageCreated>(
-      CONSTANTS.SendMessageOnMessageCreated
+    iocContainer.get<SendMessageOnMessageCreated>(
+      CONSTANTS.SendMessageOnMessageCreated,
     );
   const notifyFollowerOnPostCreated =
-    container.get<NotifyFollowerOnPostCreated>(
-      CONSTANTS.NotifyFollowerOnPostCreated
+    iocContainer.get<NotifyFollowerOnPostCreated>(
+      CONSTANTS.NotifyFollowerOnPostCreated,
     );
   const notifyCommentAuthorOnCommentLiked =
-    container.get<NotifyCommentAuthorOnCommentLiked>(
-      CONSTANTS.NotifyCommentAuthorOnCommentLiked
+    iocContainer.get<NotifyCommentAuthorOnCommentLiked>(
+      CONSTANTS.NotifyCommentAuthorOnCommentLiked,
     );
   const notifyCommentAuthorOnCommentCreated =
-    container.get<NotifyCommentAuthorOnCommentCreated>(
-      CONSTANTS.NotifyCommentAuthorOnCommentCreated
+    iocContainer.get<NotifyCommentAuthorOnCommentCreated>(
+      CONSTANTS.NotifyCommentAuthorOnCommentCreated,
     );
   const notifyPostAuthorOnCommentCreated =
-    container.get<NotifyPostAuthorOnCommentCreated>(
-      CONSTANTS.NotifyPostAuthorOnCommentCreated
-    );
-  
-  const notifyReceiverOnMessageCreated =
-    container.get<NotifyReceiverOnMessageCreated>(
-      CONSTANTS.NotifyReceiverOnMessageCreated
+    iocContainer.get<NotifyPostAuthorOnCommentCreated>(
+      CONSTANTS.NotifyPostAuthorOnCommentCreated,
     );
 
+  const notifyReceiverOnMessageCreated =
+    iocContainer.get<NotifyReceiverOnMessageCreated>(
+      CONSTANTS.NotifyReceiverOnMessageCreated,
+    );
 
   notifyPostAuthorOnPostLiked.setupSubscriptions();
   notifyReceiverOnMessageCreated.setupSubscriptions();

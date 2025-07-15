@@ -60,17 +60,29 @@ export function bindUseCases(container: Container) {
   container.bind<QueryPosts>(CONSTANTS.QueryPostsUseCase).to(QueryPosts);
 
   // Comment use cases
-  container.bind<CreateComment>(CONSTANTS.CreateCommentUseCase).to(CreateComment);
-  container.bind<DeleteComment>(CONSTANTS.DeleteCommentUseCase).to(DeleteComment);
+  container
+    .bind<CreateComment>(CONSTANTS.CreateCommentUseCase)
+    .to(CreateComment);
+  container
+    .bind<DeleteComment>(CONSTANTS.DeleteCommentUseCase)
+    .to(DeleteComment);
   container.bind<EditComment>(CONSTANTS.EditCommentUseCase).to(EditComment);
 
   container.bind<LikeComment>(CONSTANTS.LikeCommentUseCase).to(LikeComment);
-  container.bind<UnlikeComment>(CONSTANTS.UnlikeCommentUseCase).to(UnlikeComment);
-  container.bind<QueryComments>(CONSTANTS.QueryCommentsUseCase).to(QueryComments);
+  container
+    .bind<UnlikeComment>(CONSTANTS.UnlikeCommentUseCase)
+    .to(UnlikeComment);
+  container
+    .bind<QueryComments>(CONSTANTS.QueryCommentsUseCase)
+    .to(QueryComments);
 
   // Message use cases
-  container.bind<QueryMessages>(CONSTANTS.QueryMessagesUseCase).to(QueryMessages);
-  container.bind<CreateMessage>(CONSTANTS.CreateMessageUseCase).to(CreateMessage);
+  container
+    .bind<QueryMessages>(CONSTANTS.QueryMessagesUseCase)
+    .to(QueryMessages);
+  container
+    .bind<CreateMessage>(CONSTANTS.CreateMessageUseCase)
+    .to(CreateMessage);
   container.bind<GetChatList>(CONSTANTS.GetChatListUseCase).to(GetChatList);
 
   // File upload use cases
@@ -84,4 +96,3 @@ export function bindUseCases(container: Container) {
   container.bind<Logout>(CONSTANTS.LogoutUseCase).to(Logout);
   container.bind<Refresh>(CONSTANTS.RefreshUseCase).to(Refresh);
 }
-

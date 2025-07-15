@@ -19,7 +19,7 @@ class NotifyPostAuthorOnPostLiked implements IHandle {
     @inject(CONSTANTS.NotificationService)
     notificationService: INotificationService,
     @inject(CONSTANTS.NotificationRepository)
-    notificationRepo: INotificationRepository
+    notificationRepo: INotificationRepository,
   ) {
     this.userRepo = userRepo;
     this.notificationService = notificationService;

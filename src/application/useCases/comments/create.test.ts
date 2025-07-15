@@ -16,7 +16,6 @@ import {
 import CreateCommentUseCase from "@application/useCases/comments/create";
 import {
   ResourceNotFoundError,
-  UnauthenticatedError,
   InvalidRequestError,
 } from "@application/useCases/errors";
 import { ValidationError } from "@domain/errors";
@@ -37,13 +36,16 @@ describe("Create Comment Use Case", () => {
     const createCommentUseCase = new CreateCommentUseCase(
       mockCommentRepo,
 
-      mockPostRepo
+      mockPostRepo,
     );
 
-    const result = await createCommentUseCase.execute({
-      postId: testPost.id.value,
-      content: "New Comment Hello World",
-    },testUser);
+    const result = await createCommentUseCase.execute(
+      {
+        postId: testPost.id.value,
+        content: "New Comment Hello World",
+      },
+      testUser,
+    );
 
     it("should save the comment", () => {
       expect(mockCommentRepo.save).toHaveBeenCalled();
@@ -68,7 +70,7 @@ describe("Create Comment Use Case", () => {
 
     const createCommentUseCase = new CreateCommentUseCase(
       mockCommentRepo,
-      mockPostRepo
+      mockPostRepo,
     );
 
     const result = await createCommentUseCase.execute(
@@ -76,7 +78,7 @@ describe("Create Comment Use Case", () => {
         postId: testPost.id.value,
         content: "",
       },
-      testUser
+      testUser,
     );
 
     it("should return validation error", () => {
@@ -87,7 +89,6 @@ describe("Create Comment Use Case", () => {
       expect(mockCommentRepo.save).not.toHaveBeenCalled();
     });
   });
-
 
   describe("when post is not found", async () => {
     const testUser = createUserOne();
@@ -103,13 +104,16 @@ describe("Create Comment Use Case", () => {
     const createCommentUseCase = new CreateCommentUseCase(
       mockCommentRepo,
 
-      mockPostRepo
+      mockPostRepo,
     );
 
-    const result = await createCommentUseCase.execute({
-      postId: "somePostId",
-      content: "a".repeat(1001),
-    },testUser);
+    const result = await createCommentUseCase.execute(
+      {
+        postId: "somePostId",
+        content: "a".repeat(1001),
+      },
+      testUser,
+    );
 
     it("should return resource not found error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(ResourceNotFoundError);
@@ -136,14 +140,17 @@ describe("Create Comment Use Case", () => {
     const createCommentUseCase = new CreateCommentUseCase(
       mockCommentRepo,
 
-      mockPostRepo
+      mockPostRepo,
     );
 
-    const result = await createCommentUseCase.execute({
-      postId: testPost.id.value,
-      content: "some content",
-      parentCommentId: "someParentCommentId",
-    },testUser);
+    const result = await createCommentUseCase.execute(
+      {
+        postId: testPost.id.value,
+        content: "some content",
+        parentCommentId: "someParentCommentId",
+      },
+      testUser,
+    );
 
     it("should return resource not found error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(ResourceNotFoundError);
@@ -171,14 +178,17 @@ describe("Create Comment Use Case", () => {
     const createCommentUseCase = new CreateCommentUseCase(
       mockCommentRepo,
 
-      mockPostRepo
+      mockPostRepo,
     );
 
-    const result = await createCommentUseCase.execute({
-      postId: testPost.id.value,
-      content: "some content",
-      parentCommentId: testComment.id.value,
-    },testUser);
+    const result = await createCommentUseCase.execute(
+      {
+        postId: testPost.id.value,
+        content: "some content",
+        parentCommentId: testComment.id.value,
+      },
+      testUser,
+    );
 
     it("should return invalid request error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(InvalidRequestError);

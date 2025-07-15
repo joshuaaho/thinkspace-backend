@@ -1,12 +1,11 @@
 import { describe, it, expect } from "vitest";
 import request from "supertest";
 import app from "@index";
-import container from "@containers/index";
+import { iocContainer } from "@containers/index";
 import IUserRepository from "@domain/repositories/IUserRepository";
 import IPostRepository from "@domain/repositories/IPostRepository";
 import CONSTANTS from "@containers/constants";
 import {
-  createUserOne,
   createPostOne,
   createUserTwo,
   createUserThree,
@@ -19,11 +18,11 @@ describe("Unlike Post Route", () => {
     const testUser = createUserTwo();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
-      const postRepository = container.get<IPostRepository>(
-        CONSTANTS.PostRepository
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
       );
 
       await userRepository.save(testUser);
@@ -47,12 +46,12 @@ describe("Unlike Post Route", () => {
     it("should remove user from post's likedBy array", async () => {
       await initializeData();
       await sendRequest();
-      const postRepository = container.get<IPostRepository>(
-        CONSTANTS.PostRepository
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
       );
       const updatedPost = await postRepository.findById(testPost.id.value);
       expect(
-        updatedPost.unwrap().likedBy.some((id) => id.equals(testUser.id))
+        updatedPost.unwrap().likedBy.some((id) => id.equals(testUser.id)),
       ).toBe(false);
     });
   });
@@ -61,8 +60,8 @@ describe("Unlike Post Route", () => {
     const testPost = createPostOne();
 
     async function initializeData() {
-      const postRepository = container.get<IPostRepository>(
-        CONSTANTS.PostRepository
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
       );
       await postRepository.save(testPost);
     }
@@ -82,8 +81,8 @@ describe("Unlike Post Route", () => {
     const testUser = createUserTwo();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
       await userRepository.save(testUser);
     }
@@ -108,11 +107,11 @@ describe("Unlike Post Route", () => {
     const testUser = createUserThree();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
-      const postRepository = container.get<IPostRepository>(
-        CONSTANTS.PostRepository
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
       );
 
       await userRepository.save(testUser);

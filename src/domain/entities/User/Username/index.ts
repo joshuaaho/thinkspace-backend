@@ -1,6 +1,6 @@
-  import { Result, Ok, Err } from 'ts-results-es';
-import ValueObject from '@domain/core/BaseValueObject';
-import { ValidationError } from '@domain/errors';
+import { Result, Ok, Err } from "ts-results-es";
+import ValueObject from "@domain/core/BaseValueObject";
+import { ValidationError } from "@domain/errors";
 
 class Username extends ValueObject {
   private readonly _value: string;
@@ -24,7 +24,11 @@ class Username extends ValueObject {
     // Check if username contains only alphanumeric characters and underscores
     const validUsernameRegex = /^[a-zA-Z0-9_]+$/;
     if (!validUsernameRegex.test(username)) {
-      return Err(new ValidationError("Username can only contain letters, numbers, and underscores"));
+      return Err(
+        new ValidationError(
+          "Username can only contain letters, numbers, and underscores",
+        ),
+      );
     }
 
     return Ok(new Username(username));
@@ -35,4 +39,4 @@ class Username extends ValueObject {
   }
 }
 
-export default Username; 
+export default Username;

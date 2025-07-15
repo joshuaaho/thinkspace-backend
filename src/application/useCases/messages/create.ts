@@ -8,13 +8,15 @@ import Text from "@domain/entities/Message/Text";
 import Message from "@domain/entities/Message";
 import User from "@domain/entities/User";
 import { ValidationError } from "@domain/errors";
-import { InvalidRequestError, ResourceNotFoundError } from "@application/useCases/errors";
+import {
+  InvalidRequestError,
+  ResourceNotFoundError,
+} from "@application/useCases/errors";
 
 export type CreateMessageCommand = {
   text: string;
   recipientId: string;
 };
-
 
 @injectable()
 class CreateMessage {
@@ -23,7 +25,7 @@ class CreateMessage {
 
   constructor(
     @inject(CONSTANTS.MessageRepository) messageRepo: IMessageRepository,
-    @inject(CONSTANTS.UserRepository) userRepo: IUserRepository
+    @inject(CONSTANTS.UserRepository) userRepo: IUserRepository,
   ) {
     this.messageRepo = messageRepo;
     this.userRepo = userRepo;
@@ -31,13 +33,14 @@ class CreateMessage {
 
   public async execute(
     command: CreateMessageCommand,
-    requestor: User
+    requestor: User,
   ): Promise<
     Result<void, ValidationError | ResourceNotFoundError | InvalidRequestError>
   > {
-
     if (requestor.id.value === command.recipientId) {
-      return Err(new InvalidRequestError("You cannot send a message to yourself"));
+      return Err(
+        new InvalidRequestError("You cannot send a message to yourself"),
+      );
     }
 
     const recipientResult = await this.userRepo.findById(command.recipientId);
@@ -58,7 +61,7 @@ class CreateMessage {
 
     await this.messageRepo.save(message);
 
-   return Ok.EMPTY;
+    return Ok.EMPTY;
   }
 }
 

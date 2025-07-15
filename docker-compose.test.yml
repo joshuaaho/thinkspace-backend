@@ -1,0 +1,80 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo
+    container_name: mongodb-test
+    command: ["mongod", "--replSet", "rs0"]
+    ports:
+      - "27018:27017"
+    healthcheck:
+      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongodb:27017'}]}) }" | mongosh --port 27017 --quiet
+      timeout: 30s
+      start_period: 0s
+      start_interval: 1s
+      retries: 30
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - local-network
+
+  localstack:
+    image: localstack/localstack
+    container_name: localstack-test
+    environment:
+      - SERVICES=s3
+      - GATEWAY_LISTEN=0.0.0.0:4566
+    volumes:
+      - "./localstack/setup.sh:/etc/localstack/init/ready.d/setup.sh"
+      - "./localstack/cors-config.json:/etc/localstack/config/cors-config.json"
+    networks:
+      - local-network
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki-test
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - local-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana-test
+    environment:
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_FEATURE_TOGGLES_ENABLE=alertingSimplifiedRouting,alertingQueryAndExpressionsStepMode
+    entrypoint:
+      - sh
+      - -euc
+      - |
+        mkdir -p /etc/grafana/provisioning/datasources
+        cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
+        apiVersion: 1
+        datasources:
+        - name: Loki
+          type: loki
+          access: proxy 
+          orgId: 1
+          url: http://loki:3100
+          basicAuth: false
+          isDefault: true
+          version: 1
+          editable: false
+        EOF
+        /run.sh
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - loki
+    networks:
+      - local-network
+
+networks:
+  local-network:
+    driver: bridge
+volumes:
+  grafana-data:
+
+  mongodb-data:

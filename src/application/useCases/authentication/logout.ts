@@ -1,11 +1,10 @@
-
 import IUserRepository from "@domain/repositories/IUserRepository";
 import { injectable, inject } from "inversify";
 
 import CONSTANTS from "@containers/constants";
 
 export interface LogoutCommand {
-  refreshToken: string; 
+  refreshToken: string;
 }
 
 @injectable()
@@ -18,7 +17,7 @@ class LogoutUseCase {
 
   public async execute(request: LogoutCommand) {
     const someUser = await this.userRepo.findByRefreshToken(
-      request.refreshToken
+      request.refreshToken,
     );
 
     if (someUser.isNone()) {

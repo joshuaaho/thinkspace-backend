@@ -13,12 +13,17 @@ import Url from "@domain/common/Url";
 import { ValidationError } from "@domain/errors";
 import { ThemePreference } from "@domain/entities/User";
 
+//  type EditUserCommand = Partial<{...}>; is not used as swagger UI parses it weirdly
+
 export type EditUserCommand = Partial<{
   work: string;
   bio: string;
   education: string;
   interest: string;
   location: string;
+  /**
+   * S3 url of the profile image. Generate a presigned url using /files/upload-url and use the url to save the image to s3 (Automatically handled by the frontend). After saving, the url can be used in this request to indicate your new profile image
+   */
   profileImgUrl: string;
   themePreference: ThemePreference;
 }>;
@@ -33,7 +38,7 @@ class EditUser {
 
   public async execute(
     command: EditUserCommand,
-    requestor: User
+    requestor: User,
   ): Promise<Result<void, ValidationError>> {
     const updates: any = {};
 

@@ -1,4 +1,3 @@
-import { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
 import QueryUsers, {
   QueryUsersCommand,
@@ -6,38 +5,64 @@ import QueryUsers, {
 import CONSTANTS from "@containers/constants";
 import { ToZodSchema } from "@zod";
 import { z } from "zod";
+import {
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+  NextFunction as ExpressNextFunction,
+} from "express";
+import {
+  Controller,
+  Middlewares,
+  Get,
+  Route,
+  SuccessResponse,
+  Queries,
+  Tags,
+  Response,
+} from "tsoa";
+import { HTTPError } from "@presentation/middleware/errorHandler";
+
+async function customMiddleware(
+  req: ExpressRequest,
+  res: ExpressResponse,
+  next: ExpressNextFunction,
+) {
+  const schema = z.object({
+    username: z.string().optional(),
+    offset: z.coerce.number().optional(),
+    limit: z.coerce.number().optional(),
+  } satisfies ToZodSchema<QueryUsersCommand>);
+
+  const validationResult = schema.safeParse(req.query);
+
+  if (!validationResult.success) {
+    return next(validationResult.error);
+  }
+  req.query = validationResult.data as any;
+  return next();
+}
 
 @injectable()
-export class QueryUsersController {
+@Tags("Users")
+@Route("users")
+export class QueryUsersController extends Controller {
   private queryUsersUseCase: QueryUsers;
 
   constructor(
-    @inject(CONSTANTS.QueryUsersUseCase) queryUsersUseCase: QueryUsers
+    @inject(CONSTANTS.QueryUsersUseCase) queryUsersUseCase: QueryUsers,
   ) {
+    super();
     this.queryUsersUseCase = queryUsersUseCase;
   }
 
-  async queryUsers(req: Request, res: Response, next: NextFunction) {
-    try {
-      const schema = z.object({
-        username: z.string().optional(),
-        offset: z.coerce.number().optional(),
-        limit: z.coerce.number().optional(),
-      } satisfies ToZodSchema<QueryUsersCommand>);
+  @Get()
+  @Middlewares(customMiddleware)
+  @Response<HTTPError>(400, "Invalid HTTP request")
+  @SuccessResponse("200", "Users Retrieved Successfully")
+  async queryUsers(@Queries() query: QueryUsersCommand) {
+    const data = await this.queryUsersUseCase.execute(query);
 
-      const validationResult = schema.safeParse(req.query);
-
-      if (!validationResult.success) {
-        return res.status(400).json({ error: "Invalid HTTP request" });
-      }
-
-      const users = await this.queryUsersUseCase.execute(validationResult.data);
-
-      return res.status(200).json(users);
-    } catch (error) {
-      next(error);
-    }
+    this.setStatus(200);
+    return data;
   }
 }
-
-export default QueryUsersController;

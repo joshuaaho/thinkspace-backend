@@ -1,52 +1,72 @@
-import { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
 import CONSTANTS from "@containers/constants";
 import { z } from "zod";
 import { ToZodSchema } from "@zod";
-import { ResourceNotFoundError } from "@application/useCases/errors";
-import { AuthenticatedRequest } from "@presentation/middleware/auth";
-import GetById, { GetByIdCommand } from "@application/useCases/users/getById";
+import GetByIdUseCase, {
+  GetUserByIdCommand,
+} from "@application/useCases/users/getById";
+import {
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+  NextFunction as ExpressNextFunction,
+} from "express";
+import {
+  Controller,
+  Middlewares,
+  Get,
+  Route,
+  Response,
+  SuccessResponse,
+  Path,
+  Tags,
+} from "tsoa";
+import { HTTPError } from "@presentation/middleware/errorHandler";
+
+async function customMiddleware(
+  req: ExpressRequest,
+  res: ExpressResponse,
+  next: ExpressNextFunction,
+) {
+  const schema = z.object({
+    userId: z.string(),
+  } satisfies ToZodSchema<GetUserByIdCommand>);
+
+  const validationResult = schema.safeParse({
+    userId: req.params.userId,
+  });
+
+  if (!validationResult.success) {
+    return next(validationResult.error);
+  }
+  return next();
+}
 
 @injectable()
-class GetByIdController {
-  private getByIdUseCase: GetById;
+@Tags("Users")
+@Route("users")
+export class GetByIdController extends Controller {
+  private getByIdUseCase: GetByIdUseCase;
 
   constructor(
-    @inject(CONSTANTS.GetUserByIdUseCase) getByIdUseCase: GetById
+    @inject(CONSTANTS.GetUserByIdUseCase) getByIdUseCase: GetByIdUseCase,
   ) {
+    super();
     this.getByIdUseCase = getByIdUseCase;
   }
 
-  async handleGetById(req: Request, res: Response, next: NextFunction) {
-    try {
-      const schema = z.object({
-        userId: z.string(),
-      } satisfies ToZodSchema<GetByIdCommand>);
+  @Get("{userId}")
+  @Middlewares(customMiddleware)
+  @Response<HTTPError>(400, "Invalid HTTP request")
+  @Response<HTTPError>(404, "User not found")
+  @SuccessResponse("200", "User Retrieved Successfully")
+  async handleGetById(@Path() userId: string) {
+    const data = await this.getByIdUseCase.execute({ userId });
 
-      const validationResult = schema.safeParse({
-        userId: req.params.userId,
-      });
-
-      if (!validationResult.success) {
-        return res.status(400).json({ error: "Invalid HTTP request" });
-      }
-
-      const result = await this.getByIdUseCase.execute(
-        validationResult.data,
-      );
-
-      if (result.isErr()) {
-
-          return res.status(404).json({ error: result.error.message });
-   
-      
-      }
-
-      return res.status(200).json(result.unwrap());
-    } catch (error) {
-      next(error);
+    if (data.isErr()) {
+      throw data.error;
     }
+
+    this.setStatus(200);
+    return data.value;
   }
 }
-
-export default GetByIdController; 

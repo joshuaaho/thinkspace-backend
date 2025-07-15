@@ -1,10 +1,7 @@
-import { describe, it, expect, assert } from "vitest";
+import { describe, it, expect } from "vitest";
 import EntityId from "@domain/core/EntityId";
 
-
 describe("EntityId", () => {
-
-
   describe("compare entity ids", () => {
     const id1 = EntityId.create("123");
     const id2 = EntityId.create("123");

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import request from "supertest";
 import app from "@index";
-import container from "@containers/index";
+import { iocContainer } from "@containers/index";
 import IUserRepository from "@domain/repositories/IUserRepository";
 import CONSTANTS from "@containers/constants";
 import { createUserOne } from "@utils/testData/testEntities";
@@ -14,8 +14,8 @@ describe("Logout Route", () => {
     testUser.refreshToken = refreshToken;
 
     const initializeData = async () => {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
       await userRepository.save(testUser);
     };
@@ -41,8 +41,8 @@ describe("Logout Route", () => {
     it("should remove refresh token from user", async () => {
       await initializeData();
       await sendRequest();
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
       const user = await userRepository.findByRefreshToken(refreshToken);
       expect(user.isNone()).toBe(true);

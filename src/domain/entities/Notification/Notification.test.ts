@@ -14,7 +14,7 @@ describe("Notification", () => {
       message,
       resourceId,
       isRead: false,
-      redirectToResourceType: "post"
+      redirectToResourceType: "post",
     });
 
     it("should have correct to id", () => {
@@ -49,7 +49,7 @@ describe("Notification", () => {
       message,
       resourceId,
       isRead: false,
-      redirectToResourceType: "post"
+      redirectToResourceType: "post",
     });
 
     notification.markAsRead();
@@ -58,4 +58,4 @@ describe("Notification", () => {
       expect(notification.isRead).toBe(true);
     });
   });
-}); 
+});

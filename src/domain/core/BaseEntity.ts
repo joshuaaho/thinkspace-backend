@@ -27,7 +27,6 @@ abstract class BaseEntity {
   }
 
   public addDomainEvent(domainEvent: IDomainEvent): void {
-  
     this._domainEvents.push(domainEvent);
 
     DomainEvents.markEntityForDispatch(this);

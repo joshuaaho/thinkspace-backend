@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import NotifyCommentAuthorOnCommentLiked from "@application/subscriptions/NotifyCommentAuthorOnCommentLiked";
 import {
   createUserRepositoryMock,
@@ -29,7 +29,7 @@ describe("Notify Comment Author On Comment Liked", () => {
     const handler = new NotifyCommentAuthorOnCommentLiked(
       mockUserRepo,
       mockNotificationService,
-      mockNotificationRepo
+      mockNotificationRepo,
     );
 
     await handler.onCommentLiked(new CommentLiked(comment));
@@ -58,7 +58,7 @@ describe("Notify Comment Author On Comment Liked", () => {
     const handler = new NotifyCommentAuthorOnCommentLiked(
       mockUserRepo,
       mockNotificationService,
-      mockNotificationRepo
+      mockNotificationRepo,
     );
 
     await handler.onCommentLiked(new CommentLiked(comment));

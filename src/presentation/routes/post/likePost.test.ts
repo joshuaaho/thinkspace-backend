@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import request from "supertest";
 import app from "@index";
-import container from "@containers/index";
+import { iocContainer } from "@containers/index";
 import IUserRepository from "@domain/repositories/IUserRepository";
 import IPostRepository from "@domain/repositories/IPostRepository";
 import CONSTANTS from "@containers/constants";
@@ -12,8 +12,7 @@ import {
   createUserTwo,
 } from "@utils/testData/testEntities";
 import { createAccessToken } from "@utils/testData/infastructure";
-import { clearDatabase } from "../../../testSetup/localSetup";
-import { postConstruct } from "inversify";
+
 describe("Like Post Route", () => {
   describe("when liking post successfully", () => {
     const testPost = createPostOne();
@@ -21,11 +20,11 @@ describe("Like Post Route", () => {
     const testUserOne = createUserOne();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
-      const postRepository = container.get<IPostRepository>(
-        CONSTANTS.PostRepository
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
       );
 
       await userRepository.save(testUser);
@@ -48,14 +47,14 @@ describe("Like Post Route", () => {
     });
 
     it("should add user to post's likedBy array", async () => {
-      const postRepository = container.get<IPostRepository>(
-        CONSTANTS.PostRepository
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
       );
       await initializeData();
       await sendRequest();
       const updatedPost = await postRepository.findById(testPost.id.value);
       expect(
-        updatedPost.unwrap().likedBy.some((id) => id.equals(testUser.id))
+        updatedPost.unwrap().likedBy.some((id) => id.equals(testUser.id)),
       ).toBe(true);
     });
   });
@@ -64,8 +63,8 @@ describe("Like Post Route", () => {
     const testPost = createPostOne();
 
     async function initializeData() {
-      const postRepository = container.get<IPostRepository>(
-        CONSTANTS.PostRepository
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
       );
       await postRepository.save(testPost);
     }
@@ -85,8 +84,8 @@ describe("Like Post Route", () => {
     const testUser = createUserOne();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
       await userRepository.save(testUser);
     }
@@ -111,11 +110,11 @@ describe("Like Post Route", () => {
     const testUser = createUserTwo();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
-      const postRepository = container.get<IPostRepository>(
-        CONSTANTS.PostRepository
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
       );
 
       await userRepository.save(testUser);

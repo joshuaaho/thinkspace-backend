@@ -15,17 +15,17 @@ class UnlikeComment {
   private commentRepository: ICommentRepository;
 
   constructor(
-    @inject(CONSTANTS.CommentRepository) commentRepository: ICommentRepository
+    @inject(CONSTANTS.CommentRepository) commentRepository: ICommentRepository,
   ) {
     this.commentRepository = commentRepository;
   }
 
   async execute(
     command: UnlikeCommentCommand,
-    requestor: User
+    requestor: User,
   ): Promise<Result<void, ResourceNotFoundError | NotLikedCommentError>> {
     const someComment = await this.commentRepository.findById(
-      command.commentId
+      command.commentId,
     );
 
     if (someComment.isNone()) {

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import request from "supertest";
 import app from "@index";
-import container from "@containers/index";
+import { iocContainer } from "@containers/index";
 import IUserRepository from "@domain/repositories/IUserRepository";
 import CONSTANTS from "@containers/constants";
 import { createUserOne } from "@utils/testData/testEntities";
@@ -12,8 +12,8 @@ describe("Get Me Route", () => {
     const testUser = createUserOne();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
       await userRepository.save(testUser);
     }
@@ -21,7 +21,7 @@ describe("Get Me Route", () => {
     async function sendRequest() {
       const accessToken = createAccessToken(testUser.id.value);
       return request(app)
-        .get("/users/me")
+        .get("/me")
         .set("Authorization", `Bearer ${accessToken}`);
     }
 
@@ -52,7 +52,7 @@ describe("Get Me Route", () => {
 
   describe("when user is not authenticated", () => {
     async function sendRequest() {
-      return request(app).get("/users/me");
+      return request(app).get("/me");
     }
 
     it("should return 401 status code", async () => {
@@ -65,7 +65,7 @@ describe("Get Me Route", () => {
     async function sendRequest() {
       const accessToken = createAccessToken("non-existent-user-id");
       return request(app)
-        .get("/users/me")
+        .get("/me")
         .set("Authorization", `Bearer ${accessToken}`);
     }
 

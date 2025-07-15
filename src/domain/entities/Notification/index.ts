@@ -1,6 +1,5 @@
 import BaseEntity from "@domain/core/BaseEntity";
 import EntityId from "@domain/core/EntityId";
-import { Result, Ok, Err } from "ts-results-es";
 
 interface NotificationProps {
   id?: EntityId;
@@ -29,7 +28,6 @@ export class Notification extends BaseEntity {
     this._isRead = props.isRead;
     this._resourceId = props.resourceId;
     this._redirectToResourceType = props.redirectToResourceType;
-
   }
 
   public static create(props: NotificationProps): Notification {
@@ -52,10 +50,10 @@ export class Notification extends BaseEntity {
     return this._isRead;
   }
 
-  public get resourceId(): string   {
+  public get resourceId(): string {
     return this._resourceId;
   }
-  
+
   public get redirectToResourceType(): string {
     return this._redirectToResourceType;
   }
@@ -69,4 +67,4 @@ export class Notification extends BaseEntity {
   }
 }
 
-export default Notification; 
+export default Notification;

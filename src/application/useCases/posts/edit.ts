@@ -7,21 +7,19 @@ import Url from "@domain/common/Url";
 import Tag from "@domain/entities/Post/Tag";
 import CONSTANTS from "@containers/constants";
 import { ValidationError } from "@domain/errors";
-import { UnauthorizedError, ResourceNotFoundError } from "@application/useCases/errors";
+import {
+  UnauthorizedError,
+  ResourceNotFoundError,
+} from "@application/useCases/errors";
 import User from "@domain/entities/User";
 
-type OptionalEditPostCommand = Partial<{
-  title: string;  
-  imgUrls: string[];
-  content: string;
-  tags: string[];
-}>;
-
-type RequiredEditPostCommand = {
+export interface EditPostCommand {
+  title?: string;
+  imgUrls?: string[];
+  content?: string;
+  tags?: string[];
   postId: string;
-};
-
-export type EditPostCommand = RequiredEditPostCommand & OptionalEditPostCommand;
+}
 
 @injectable()
 class EditPost {
@@ -33,8 +31,10 @@ class EditPost {
 
   public async execute(
     request: EditPostCommand,
-    requestor: User
-  ): Promise<Result<void, ValidationError | UnauthorizedError | ResourceNotFoundError>> {
+    requestor: User,
+  ): Promise<
+    Result<void, ValidationError | UnauthorizedError | ResourceNotFoundError>
+  > {
     let tagsUpdate: Tag[] | undefined;
     let contentUpdate: Content | undefined;
     let imgUrlsUpdate: Url[] | undefined;
@@ -73,7 +73,7 @@ class EditPost {
       if (result.isErr()) {
         return result;
       }
-     
+
       imgUrlsUpdate = result.value;
     }
 
@@ -103,4 +103,4 @@ class EditPost {
   }
 }
 
-export default EditPost; 
+export default EditPost;

@@ -1,6 +1,6 @@
-import ValueObject from '@domain/core/BaseValueObject';
-import { Result, Ok, Err } from 'ts-results-es';
-import { ValidationError } from '@domain/errors';
+import ValueObject from "@domain/core/BaseValueObject";
+import { Result, Ok, Err } from "ts-results-es";
+import { ValidationError } from "@domain/errors";
 class Content extends ValueObject {
   private readonly _value: string;
 
@@ -10,8 +10,8 @@ class Content extends ValueObject {
   }
 
   public static create(content: string): Result<Content, ValidationError> {
-    if (content.length < 1) {
-        return Err(new ValidationError("Content is too short"));
+    if (content.length < 3) {
+      return Err(new ValidationError("Content is too short"));
     }
 
     if (content.length > 500) {
@@ -25,4 +25,4 @@ class Content extends ValueObject {
   }
 }
 
-export default Content; 
+export default Content;

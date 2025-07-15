@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import app from "@index";
-import container from "@containers/index";
+import { iocContainer } from "@containers/index";
 import IUserRepository from "@domain/repositories/IUserRepository";
 import IPostRepository from "@domain/repositories/IPostRepository";
 import CONSTANTS from "@containers/constants";
@@ -21,11 +21,11 @@ describe("Query Posts Route", () => {
     const testPostThree = createPostThree();
     const testPostFour = createPostFour();
 
-    const postRepository = container.get<IPostRepository>(
-      CONSTANTS.PostRepository
+    const postRepository = iocContainer.get<IPostRepository>(
+      CONSTANTS.PostRepository,
     );
-    const userRepository = container.get<IUserRepository>(
-      CONSTANTS.UserRepository
+    const userRepository = iocContainer.get<IUserRepository>(
+      CONSTANTS.UserRepository,
     );
     await userRepository.save(testUser);
     await postRepository.save(testPost);
@@ -131,7 +131,7 @@ describe("Query Posts Route", () => {
     describe("with 'typescript' and 'programming' tags", async () => {
       async function sendRequest() {
         const response = await request(app).get(
-          "/posts?tags[0]=typescript&tags[1]=programming"
+          "/posts?tags[0]=typescript&tags[1]=programming",
         );
 
         return response;
@@ -223,7 +223,7 @@ describe("Query Posts Route", () => {
     describe("using 'most-liked'", async () => {
       async function sendRequest() {
         const response = await request(app).get("/posts").query({
-          sortBy: "most-liked",
+          sortBy: "mostLiked",
         });
         return response;
       }

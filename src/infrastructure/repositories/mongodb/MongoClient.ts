@@ -1,9 +1,12 @@
 import { MongoClient } from "mongodb";
-import "dotenv/config";
+import dotenv from "dotenv";
+
 import { DomainEvents } from "@domain/events/DomainEvents";
 import EntityId from "@domain/core/EntityId";
 
-const connectionString = process.env.MONGODB_URI || "mongodb://localhost:27019";
+dotenv.config({ path: `.env.${process.env.APP_ENV}` });
+
+const connectionString = process.env.MONGODB_URI || "mongodb://localhost:27017";
 
 const client = await new MongoClient(connectionString).connect();
 
@@ -42,7 +45,11 @@ const dispatchEventsCallback = (id: string) => {
   DomainEvents.dispatchEventsForAggregate(aggregateId);
 };
 messageChangeStream.on("change", (change: any) => {
-  dispatchEventsCallback(change.fullDocument.id);
+  switch (change.operationType) {
+    case "insert":
+      dispatchEventsCallback(change.fullDocument.id);
+      break;
+  }
 });
 
 commentChangeStream.on("change", (change: any) => {

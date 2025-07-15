@@ -5,13 +5,16 @@ import Content from "@domain/entities/Post/Content";
 import Url from "@domain/common/Url";
 import BaseEntity from "@domain/core/BaseEntity";
 import Tag from "@domain/entities/Post/Tag";
-import { ValidationError, NotLikedPostError, AlreadyLikedPostError, SelfLikedPostError } from "@domain/errors";
+import {
+  ValidationError,
+  NotLikedPostError,
+  AlreadyLikedPostError,
+  SelfLikedPostError,
+} from "@domain/errors";
 import User from "@domain/entities/User";
 import { UnauthorizedError } from "@application/useCases/errors";
 import PostCreated from "@domain/events/PostCreated";
 import PostLiked from "@domain/events/PostLiked";
-
-
 
 interface UpdateablePostProps {
   title?: Title;
@@ -19,7 +22,7 @@ interface UpdateablePostProps {
   imgUrls?: Url[];
   tags?: Tag[];
 }
-interface PostProps  {
+interface PostProps {
   id?: EntityId;
   title: Title;
   content: Content;
@@ -31,7 +34,7 @@ interface PostProps  {
   createdAt?: Date;
 }
 
- class Post extends BaseEntity {
+class Post extends BaseEntity {
   private _authorId: EntityId;
   private _title: Title;
   private _content: Content;
@@ -47,18 +50,13 @@ interface PostProps  {
     this._imgUrls = props.imgUrls || [];
     this._tags = props.tags || [];
     this._likedBy = props.likedBy || [];
-
-    
-
   }
 
-
-   public static create(props: PostProps): Result<Post, ValidationError> {
-
+  public static create(props: PostProps): Result<Post, ValidationError> {
     if (props.tags && props.tags.length > 5) {
       return Err(new ValidationError("Too many tags"));
     }
-    
+
     const post = new Post({
       id: props.id,
       title: props.title,
@@ -72,7 +70,6 @@ interface PostProps  {
     });
 
     if (!props.id) {
-
       post.addDomainEvent(new PostCreated(post));
     }
 
@@ -85,7 +82,7 @@ interface PostProps  {
 
   get content(): Content {
     return this._content;
-  } 
+  }
 
   get authorId(): EntityId {
     return this._authorId;
@@ -101,19 +98,19 @@ interface PostProps  {
 
   get imgUrls(): Url[] {
     return this._imgUrls;
-   }
+  }
 
   get commentedBy(): EntityId[] {
     return this._commentedBy;
   }
-   
-  public addCommentFromUser(userId: EntityId){
 
+  public addCommentFromUser(userId: EntityId) {
     this._commentedBy.push(userId);
-  
   }
 
-  public addLikeFromUser(userId: EntityId): Result<void, AlreadyLikedPostError | SelfLikedPostError> {
+  public addLikeFromUser(
+    userId: EntityId,
+  ): Result<void, AlreadyLikedPostError | SelfLikedPostError> {
     if (this.isLikedByUser(userId)) {
       return Err(new AlreadyLikedPostError("User already liked this post"));
     }
@@ -128,17 +125,16 @@ interface PostProps  {
   public removeLikeFromUser(userId: EntityId): Result<void, NotLikedPostError> {
     if (!this.isLikedByUser(userId)) {
       return Err(
-        new NotLikedPostError("Cannot unlike a post that is not liked")
+        new NotLikedPostError("Cannot unlike a post that is not liked"),
       );
     }
     this._likedBy = this._likedBy.filter(
-      (entityId) => !entityId.equals(userId)
+      (entityId) => !entityId.equals(userId),
     );
     return Ok.EMPTY;
   }
 
-   private isLikedByUser(userId: EntityId): boolean {
-
+  private isLikedByUser(userId: EntityId): boolean {
     return this._likedBy.some((entityId) => entityId.equals(userId));
   }
 
@@ -148,11 +144,11 @@ interface PostProps  {
 
   public updateFromUserEdits(
     user: User,
-    partialPost: UpdateablePostProps
+    partialPost: UpdateablePostProps,
   ): Result<void, UnauthorizedError> {
     if (!this._authorId.equals(user.id)) {
       return Err(
-        new UnauthorizedError("User is not authorized to edit this post")
+        new UnauthorizedError("User is not authorized to edit this post"),
       );
     }
     if (partialPost.tags && partialPost.tags.length > 5) {
@@ -167,7 +163,6 @@ interface PostProps  {
       this._content = partialPost.content;
     }
     if (partialPost.imgUrls) {
-
       this._imgUrls = partialPost.imgUrls;
     }
 

@@ -14,7 +14,6 @@ import {
 import DeleteCommentUseCase from "@application/useCases/comments/delete";
 import {
   ResourceNotFoundError,
-  UnauthenticatedError,
   UnauthorizedError,
 } from "@application/useCases/errors";
 import { DomainEvents } from "@domain/events/DomainEvents";
@@ -36,7 +35,7 @@ describe("Delete Comment Use Case", () => {
       {
         commentId: testComment.id.value,
       },
-      testUser
+      testUser,
     );
 
     it("should delete the comment", () => {
@@ -67,7 +66,7 @@ describe("Delete Comment Use Case", () => {
       {
         commentId: "nonexistentCommentId",
       },
-      testUser
+      testUser,
     );
 
     it("should return resource not found error", () => {
@@ -95,7 +94,7 @@ describe("Delete Comment Use Case", () => {
       {
         commentId: testComment.id.value,
       },
-      testUser
+      testUser,
     );
 
     it("should return unauthorized error", () => {

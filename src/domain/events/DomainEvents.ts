@@ -50,7 +50,7 @@ export class DomainEvents {
 
   public static register(
     callback: (event: any) => void,
-    eventClassName: string
+    eventClassName: string,
   ): void {
     if (
       !Object.prototype.hasOwnProperty.call(this.handlersMap, eventClassName)

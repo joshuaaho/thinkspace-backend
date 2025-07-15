@@ -5,7 +5,9 @@ import MongoMessageMapper from "@infrastructure/mappers/MongoMessageMapper";
 import Message from "@domain/entities/Message";
 
 import db from "@infrastructure/repositories/mongodb/MongoClient";
-import IMessageRepository, { MessageQueryOptions } from "@domain/repositories/IMessageRepository";
+import IMessageRepository, {
+  MessageQueryOptions,
+} from "@domain/repositories/IMessageRepository";
 @injectable()
 class MongoMessageRepository
   extends MongoBaseRepository<Message>
@@ -62,6 +64,9 @@ class MongoMessageRepository
         },
         {
           $replaceRoot: { newRoot: "$latestMessage" },
+        },
+        {
+          $sort: { createdAt: -1 },
         },
       ])
       .toArray();

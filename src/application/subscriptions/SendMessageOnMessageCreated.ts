@@ -13,7 +13,7 @@ class SendMessageOnMessageCreated implements IHandle {
 
   constructor(
     @inject(CONSTANTS.MessageService) messageService: IMessageService,
-    @inject(CONSTANTS.UserRepository) userRepository: IUserRepository
+    @inject(CONSTANTS.UserRepository) userRepository: IUserRepository,
   ) {
     this.messageService = messageService;
     this.userRepository = userRepository;
@@ -23,18 +23,20 @@ class SendMessageOnMessageCreated implements IHandle {
     // Register to the domain event
     DomainEvents.register(
       this.onMessageCreated.bind(this),
-      MessageCreated.name
+      MessageCreated.name,
     );
   }
 
   public async onMessageCreated(event: MessageCreated) {
     const { message } = event;
 
-    const user = (
-      await this.userRepository.findById(message.receiverId.value)
-    ).unwrap();
-    
-    const messageDto =  {
+    const userResult = await this.userRepository.findById(
+      message.receiverId.value,
+    );
+
+    const user = userResult.unwrap();
+
+    const messageDto = {
       id: message.id.value,
       username: user.username.value,
       profileImgUrl: user.profileImgUrl.value,

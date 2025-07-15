@@ -1,6 +1,7 @@
 import { Server, DefaultEventsMap } from "socket.io";
 import JwtService from "@application/services/JwtAuthService";
 import timer from "long-timeout";
+import "dotenv/config";
 export const userSocketMap: Record<string, string> = {};
 
 interface SocketData {
@@ -26,7 +27,7 @@ export default function startSocketServer(httpServer: any) {
     SocketData
   >(httpServer, {
     cors: {
-      origin: "http://localhost:5173",
+      origin: process.env.FRONTEND_SERVER,
       methods: ["GET", "POST"],
       credentials: true,
     },
@@ -56,12 +57,9 @@ export default function startSocketServer(httpServer: any) {
   });
 
   io.on("connection", (socket) => {
-    console.log("connected", socket.id);
     userSocketMap[socket.data.userId] = socket.id;
   });
   io.on("disconnect", (socket) => {
-    console.log("disconnecting");
-
     delete userSocketMap[socket.data.userId];
   });
 }

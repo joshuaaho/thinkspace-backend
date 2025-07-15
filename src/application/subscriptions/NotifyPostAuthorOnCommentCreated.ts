@@ -9,8 +9,7 @@ import INotificationRepository from "@domain/repositories/INotificationRepositor
 import IPostRepository from "@domain/repositories/IPostRepository";
 import Notification from "@domain/entities/Notification";
 
-
-@injectable() 
+@injectable()
 class NotifyPostAuthorOnCommentCreated implements IHandle {
   private userRepo: IUserRepository;
   private postRepo: IPostRepository;
@@ -20,8 +19,10 @@ class NotifyPostAuthorOnCommentCreated implements IHandle {
   constructor(
     @inject(CONSTANTS.UserRepository) userRepo: IUserRepository,
     @inject(CONSTANTS.PostRepository) postRepo: IPostRepository,
-    @inject(CONSTANTS.NotificationService) notificationService: INotificationService,
-    @inject(CONSTANTS.NotificationRepository) notificationRepo: INotificationRepository
+    @inject(CONSTANTS.NotificationService)
+    notificationService: INotificationService,
+    @inject(CONSTANTS.NotificationRepository)
+    notificationRepo: INotificationRepository,
   ) {
     this.userRepo = userRepo;
     this.postRepo = postRepo;
@@ -30,22 +31,25 @@ class NotifyPostAuthorOnCommentCreated implements IHandle {
   }
 
   setupSubscriptions(): void {
-    DomainEvents.register(this.onCommentCreated.bind(this), CommentCreated.name);
+    DomainEvents.register(
+      this.onCommentCreated.bind(this),
+      CommentCreated.name,
+    );
   }
 
   public async onCommentCreated(event: CommentCreated): Promise<void> {
     const { comment } = event;
-    
-    // Get the comment author
-    const author = (await this.userRepo.findById(comment.authorId.value)).unwrap();
-    
-    // Get the post
+
+    const author = (
+      await this.userRepo.findById(comment.authorId.value)
+    ).unwrap();
+
     const post = (await this.postRepo.findById(comment.postId.value)).unwrap();
-    
-    // Get the post author
-    const postAuthor = (await this.userRepo.findById(post.authorId.value)).unwrap();
-    
-    // Create notification for the post author (if they're not the comment author)
+
+    const postAuthor = (
+      await this.userRepo.findById(post.authorId.value)
+    ).unwrap();
+
     if (!postAuthor.id.equals(author.id)) {
       const notification = Notification.create({
         to: postAuthor.id,
@@ -53,17 +57,13 @@ class NotifyPostAuthorOnCommentCreated implements IHandle {
         message: `${author.username.value} commented on your post`,
         isRead: false,
         resourceId: post.id.value,
-        redirectToResourceType: "posts"
+        redirectToResourceType: "posts",
       });
-      
-      // Save notification to the database
+
       await this.notificationRepo.save(notification);
-      
-      // Send notification through the notification service
+
       await this.notificationService.sendNotification(notification);
     }
-
-    
   }
 }
 

@@ -12,33 +12,33 @@ import {
   createUserTwo,
 } from "@utils/testData/testEntities";
 import UnlikeCommentUseCase from "@application/useCases/comments/unlike";
-import {
-  ResourceNotFoundError,
-  UnauthenticatedError,
-} from "@application/useCases/errors";
+import { ResourceNotFoundError } from "@application/useCases/errors";
 import { NotLikedCommentError } from "@domain/errors";
 
 describe("Unlike Comment Use Case", () => {
   describe("successfully unliking a comment", async () => {
     const testComment = createCommentOne();
     const testUser = createUserTwo();
-    
+
     const mockCommentRepo = createCommentRepositoryMock();
     mockCommentRepo.findById.mockResolvedValue(Some(testComment));
-    
+
     const mockUserRepo = createUserRepositoryMock();
     mockUserRepo.findById.mockResolvedValue(Some(testUser));
 
-    const unlikeCommentUseCase = new UnlikeCommentUseCase(
-      mockCommentRepo
+    const unlikeCommentUseCase = new UnlikeCommentUseCase(mockCommentRepo);
+
+    const result = await unlikeCommentUseCase.execute(
+      {
+        commentId: testComment.id.value,
+      },
+      testUser,
     );
 
-    const result = await unlikeCommentUseCase.execute({
-      commentId: testComment.id.value,
-    },testUser);
-
     it("should remove user from liked by array", () => {
-      expect(testComment.likedBy.some(id => id.equals(testUser.id))).toBe(false);
+      expect(testComment.likedBy.some((id) => id.equals(testUser.id))).toBe(
+        false,
+      );
     });
 
     it("should save the comment", () => {
@@ -50,22 +50,20 @@ describe("Unlike Comment Use Case", () => {
     });
   });
 
-
-
   describe("when comment is not found", async () => {
     const testUser = createUserTwo();
-    
+
     const mockCommentRepo = createCommentRepositoryMock();
     mockCommentRepo.findById.mockResolvedValue(None);
-    
 
-    const unlikeCommentUseCase = new UnlikeCommentUseCase(
-      mockCommentRepo
+    const unlikeCommentUseCase = new UnlikeCommentUseCase(mockCommentRepo);
+
+    const result = await unlikeCommentUseCase.execute(
+      {
+        commentId: "nonexistentCommentId",
+      },
+      testUser,
     );
-
-    const result = await unlikeCommentUseCase.execute({
-      commentId: "nonexistentCommentId",
-    },testUser);
 
     it("should return resource not found error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(ResourceNotFoundError);
@@ -79,18 +77,18 @@ describe("Unlike Comment Use Case", () => {
   describe("when user has not liked the comment", async () => {
     const testComment = createCommentOne();
     const testUser = createUserOne();
-    
+
     const mockCommentRepo = createCommentRepositoryMock();
     mockCommentRepo.findById.mockResolvedValue(Some(testComment));
-    
 
-    const unlikeCommentUseCase = new UnlikeCommentUseCase(
-      mockCommentRepo
+    const unlikeCommentUseCase = new UnlikeCommentUseCase(mockCommentRepo);
+
+    const result = await unlikeCommentUseCase.execute(
+      {
+        commentId: testComment.id.value,
+      },
+      testUser,
     );
-
-    const result = await unlikeCommentUseCase.execute({
-      commentId: testComment.id.value,
-      },testUser);
 
     it("should return not liked error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(NotLikedCommentError);
@@ -100,4 +98,4 @@ describe("Unlike Comment Use Case", () => {
       expect(mockCommentRepo.save).not.toHaveBeenCalled();
     });
   });
-}); 
+});

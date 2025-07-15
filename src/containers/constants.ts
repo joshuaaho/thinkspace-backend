@@ -1,4 +1,4 @@
-// const CONTROLLER_CONSTANTS = {
+// const CONTROLLER_CfONSTANTS = {
 //   // Auth Controllers
 //   LoginController: Symbol.for("LoginController"),
 //   RegisterController: Symbol.for("RegisterController"),
@@ -106,14 +106,14 @@ export const SUBSCRIPTION_CONSTANTS = {
   NotifyReceiverOnMessageCreated: Symbol.for("NotifyReceiverOnMessageCreated"),
   NotifyFollowerOnPostCreated: Symbol.for("NotifyFollowerOnPostCreated"),
   NotifyPostAuthorOnCommentCreated: Symbol.for(
-    "NotifyPostAuthorOnCommentCreated"
+    "NotifyPostAuthorOnCommentCreated",
   ),
   SendMessageOnMessageCreated: Symbol.for("SendMessageOnMessageCreated"),
   NotifyCommentAuthorOnCommentCreated: Symbol.for(
-    "NotifyCommentAuthorOnCommentCreated"
+    "NotifyCommentAuthorOnCommentCreated",
   ),
   NotifyCommentAuthorOnCommentLiked: Symbol.for(
-    "NotifyCommentAuthorOnCommentLiked"
+    "NotifyCommentAuthorOnCommentLiked",
   ),
 };
 

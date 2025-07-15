@@ -1,13 +1,16 @@
-import { Result, Ok, Err } from 'ts-results-es';
-import BaseEntity from '@domain/core/BaseEntity';
-import EntityId from '@domain/core/EntityId';
-import { AlreadyLikedCommentError, NotLikedCommentError, SelfLikedCommentError}  from '@domain/errors';
+import { Result, Ok, Err } from "ts-results-es";
+import BaseEntity from "@domain/core/BaseEntity";
+import EntityId from "@domain/core/EntityId";
+import {
+  AlreadyLikedCommentError,
+  NotLikedCommentError,
+  SelfLikedCommentError,
+} from "@domain/errors";
 import { UnauthorizedError } from "@application/useCases/errors";
-import Content from '@domain/entities/Comment/Content';
-import User from '../User';
-import CommentDeleted from '@domain/events/CommentDeleted';
-import CommentLikedEvent  from '@domain/events/CommentLiked';
-
+import Content from "@domain/entities/Comment/Content";
+import User from "../User";
+import CommentLikedEvent from "@domain/events/CommentLiked";
+import CommentCreated from "@domain/events/CommentCreated";
 
 interface CommentProps {
   id?: EntityId;
@@ -34,23 +37,38 @@ class Comment extends BaseEntity {
     this._postId = props.postId;
   }
 
-  public static create(props: CommentProps): Comment{
-    return new Comment(props);
+  public static create(props: CommentProps): Comment {
+    const comment = new Comment(props);
+    if (!props.id) {
+      comment.addDomainEvent(new CommentCreated(comment));
+    }
+    return comment;
   }
 
-
-  
-  public updateCommentFromUser(userId: EntityId, content: Content): Result<void, UnauthorizedError> {
+  public updateCommentFromUser(
+    userId: EntityId,
+    content: Content,
+  ): Result<void, UnauthorizedError> {
     if (!this.authorId.equals(userId)) {
-      return Err(new UnauthorizedError("Cannot update a comment that is not authored by the user"));
+      return Err(
+        new UnauthorizedError(
+          "Cannot update a comment that is not authored by the user",
+        ),
+      );
     }
     this._content = content;
     return Ok.EMPTY;
   }
 
-  public addLikeFromUser(userId: EntityId): Result<void, AlreadyLikedCommentError | SelfLikedCommentError> {
-      if (this.isLikedByUser(userId)) {
-        return Err(new AlreadyLikedCommentError("Cannot like a comment that is already liked"));
+  public addLikeFromUser(
+    userId: EntityId,
+  ): Result<void, AlreadyLikedCommentError | SelfLikedCommentError> {
+    if (this.isLikedByUser(userId)) {
+      return Err(
+        new AlreadyLikedCommentError(
+          "Cannot like a comment that is already liked",
+        ),
+      );
     }
     if (this.authorId.equals(userId)) {
       return Err(new SelfLikedCommentError("Cannot self like a comment"));
@@ -60,12 +78,16 @@ class Comment extends BaseEntity {
     return Ok.EMPTY;
   }
 
-  public removeLikeFromUser(userId: EntityId): Result<void, NotLikedCommentError> {
+  public removeLikeFromUser(
+    userId: EntityId,
+  ): Result<void, NotLikedCommentError> {
     if (!this.isLikedByUser(userId)) {
-      return Err(new NotLikedCommentError("Cannot unlike a comment that is not liked"));
+      return Err(
+        new NotLikedCommentError("Cannot unlike a comment that is not liked"),
+      );
     }
     this._likedBy = this._likedBy.filter(
-      (entityId) => !entityId.equals(userId)
+      (entityId) => !entityId.equals(userId),
     );
     return Ok.EMPTY;
   }
@@ -74,9 +96,14 @@ class Comment extends BaseEntity {
     return this._authorId.equals(userId);
   }
 
-  public updateFromUserEdits(user: User, commentContent: Content): Result<void, UnauthorizedError> {
+  public updateFromUserEdits(
+    user: User,
+    commentContent: Content,
+  ): Result<void, UnauthorizedError> {
     if (!this._authorId.equals(user.id)) {
-      return Err(new UnauthorizedError("User is not authorized to edit this comment"));
+      return Err(
+        new UnauthorizedError("User is not authorized to edit this comment"),
+      );
     }
     this._content = commentContent;
     return Ok.EMPTY;
@@ -85,7 +112,7 @@ class Comment extends BaseEntity {
   private isLikedByUser(userId: EntityId): boolean {
     return this._likedBy.some((entityId) => entityId.equals(userId));
   }
-  
+
   public get content() {
     return this._content;
   }
@@ -93,7 +120,7 @@ class Comment extends BaseEntity {
   public get likedBy() {
     return this._likedBy;
   }
-  
+
   public get parentCommentId() {
     return this._parentCommentId;
   }
@@ -103,8 +130,6 @@ class Comment extends BaseEntity {
   public get postId() {
     return this._postId;
   }
-
-
 }
 
-export default Comment; 
+export default Comment;

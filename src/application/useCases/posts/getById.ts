@@ -14,7 +14,7 @@ export type GetPostByIdResponse = {
   title: string;
   content: string;
   authorId: string;
-  authorUsername: string;
+  username: string;
   authorProfileImgUrl: string;
   tags: string[];
   imgUrls: string[];
@@ -30,14 +30,14 @@ class GetPostByIdUseCase {
 
   constructor(
     @inject(CONSTANTS.PostRepository) postRepo: IPostRepository,
-    @inject(CONSTANTS.UserRepository) userRepo: IUserRepository
+    @inject(CONSTANTS.UserRepository) userRepo: IUserRepository,
   ) {
     this.postRepo = postRepo;
     this.userRepo = userRepo;
   }
 
   public async execute(
-    request: GetPostByIdCommand
+    request: GetPostByIdCommand,
   ): Promise<Result<GetPostByIdResponse, ResourceNotFoundError>> {
     const somePost = await this.postRepo.findById(request.postId);
     if (somePost.isNone()) {
@@ -45,28 +45,25 @@ class GetPostByIdUseCase {
     }
 
     const post = somePost.unwrap();
-    
-    // Get author information
+
     const author = (await this.userRepo.findById(post.authorId.value)).unwrap();
 
-
-    
     const response: GetPostByIdResponse = {
       id: post.id.value,
       title: post.title.value,
       content: post.content.value,
       authorId: post.authorId.value,
-      authorUsername: author.username.value,
+      username: author.username.value,
       authorProfileImgUrl: author.profileImgUrl.value,
-      tags: post.tags.map(tag => tag.value),
+      tags: post.tags.map((tag) => tag.value),
       createdAt: post.createdAt,
-      likedBy: post.likedBy.map(id => id.value),
-      commentedBy: post.commentedBy.map(id => id.value),
-      imgUrls: post.imgUrls.map(url => url.value)
+      likedBy: post.likedBy.map((id) => id.value),
+      commentedBy: post.commentedBy.map((id) => id.value),
+      imgUrls: post.imgUrls.map((url) => url.value),
     };
 
     return Ok(response);
   }
 }
 
-export default GetPostByIdUseCase; 
+export default GetPostByIdUseCase;

@@ -24,16 +24,15 @@ class LoginUseCase {
 
   constructor(
     @inject(CONSTANTS.UserRepository) userRepo: IUserRepository,
-    @inject(CONSTANTS.AuthService) authService: IAuthService
-  ) { 
+    @inject(CONSTANTS.AuthService) authService: IAuthService,
+  ) {
     this.userRepo = userRepo;
     this.authService = authService;
   }
 
   public async execute(
-    request: LoginCommand
+    request: LoginCommand,
   ): Promise<Result<LoginResponse, UnauthenticatedError>> {
-   
     const someUser = await this.userRepo.findByUsername(request.username);
 
     if (someUser.isNone()) {

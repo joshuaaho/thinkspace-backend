@@ -1,10 +1,9 @@
-
-import { ObjectId, WithId } from "mongodb";
+import { WithId } from "mongodb";
 
 import EntityId from "@domain/core/EntityId";
 import { IDataMapper } from "@domain/core/IMapper";
 
-import  Message  from "@domain/entities/Message";
+import Message from "@domain/entities/Message";
 import Text from "@domain/entities/Message/Text";
 export interface MongoMessage extends WithId<Document> {
   id: string;
@@ -17,7 +16,7 @@ export interface MongoMessage extends WithId<Document> {
 
 class MongoMessageMapper implements IDataMapper<Message> {
   toDomain(mongoMessage: MongoMessage): Message {
-    const { id, text, senderId,  createdAt, receiverId } = mongoMessage;
+    const { id, text, senderId, createdAt, receiverId } = mongoMessage;
 
     const message = Message.create({
       id: EntityId.create(id),
@@ -25,20 +24,19 @@ class MongoMessageMapper implements IDataMapper<Message> {
       senderId: EntityId.create(senderId),
 
       receiverId: EntityId.create(receiverId),
-      createdAt: new Date(createdAt)
+      createdAt: new Date(createdAt),
     });
 
     return message;
   }
   toDalEntity(message: Message) {
-
     return {
       id: message.id.value,
       text: message.text.value,
       senderId: message.senderId.value,
 
       receiverId: message.receiverId.value,
-      createdAt: message.createdAt.toString()
+      createdAt: message.createdAt.toISOString(),
     };
   }
 }

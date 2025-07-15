@@ -1,6 +1,6 @@
-import { Result, Ok, Err } from 'ts-results-es';
-import ValueObject from '@domain/core/BaseValueObject';
-import { ValidationError } from '@domain/errors';
+import { Result, Ok, Err } from "ts-results-es";
+import ValueObject from "@domain/core/BaseValueObject";
+import { ValidationError } from "@domain/errors";
 
 class Interest extends ValueObject {
   private readonly _value: string;
@@ -11,15 +11,18 @@ class Interest extends ValueObject {
   }
 
   public static create(interest: string): Result<Interest, ValidationError> {
-    if (!interest || interest.trim().length === 0) {
-      return Err(new ValidationError("Interest cannot be empty"));
+    const trimmedInterest = interest.trim();
+    if (trimmedInterest.length < 3) {
+      return Err(
+        new ValidationError("Interest cannot have less than 3 characters"),
+      );
     }
 
-    if (interest.length > 200) {
-      return Err(new ValidationError("Interest cannot exceed 200 characters"));
+    if (trimmedInterest.length > 100) {
+      return Err(new ValidationError("Interest cannot exceed 100 characters"));
     }
 
-    return Ok(new Interest(interest));
+    return Ok(new Interest(trimmedInterest));
   }
 
   get value(): string {
@@ -27,4 +30,4 @@ class Interest extends ValueObject {
   }
 }
 
-export default Interest; 
+export default Interest;

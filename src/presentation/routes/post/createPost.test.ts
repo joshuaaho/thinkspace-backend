@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import request from "supertest";
 import app from "@index";
-import container from "@containers/index";
+import { iocContainer } from "@containers/index";
 import IPostRepository from "@domain/repositories/IPostRepository";
 
 import { createUserOne, createUserTwo } from "@utils/testData/testEntities";
@@ -25,8 +25,8 @@ describe("Create Post Route", () => {
     };
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
       await userRepository.save(testUser);
       await userRepository.save(userTwo);
@@ -44,9 +44,8 @@ describe("Create Post Route", () => {
     async function listenForNotification() {
       const userTwoAccessToken = createAccessToken(userTwo.id.value);
 
-      const userTwoClientSocket = await initializeClientSocket(
-        userTwoAccessToken
-      );
+      const userTwoClientSocket =
+        await initializeClientSocket(userTwoAccessToken);
       return userTwoClientSocket;
     }
 
@@ -59,8 +58,8 @@ describe("Create Post Route", () => {
     it("should create post in database", async () => {
       await initializeData();
       await sendRequest();
-      const postRepository = container.get<IPostRepository>(
-        CONSTANTS.PostRepository
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
       );
       const posts = await postRepository.query({ title: postData.title });
       expect(posts).toHaveLength(1);
@@ -101,8 +100,8 @@ describe("Create Post Route", () => {
     const testUser = createUserOne();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
       await userRepository.save(testUser);
     }

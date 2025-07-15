@@ -25,14 +25,16 @@ export const initializeClientSocket = async (token: string) => {
           auth: {
             accessToken: token,
           },
-        }
+        },
       );
 
-      clientSocket.on("connect", () => resolve(clientSocket));
+      clientSocket.on("connect", () => {
+        resolve(clientSocket);
+      });
 
-      clientSocket.on("connect_error", (error) =>
-        reject(new Error("Failed to connect to socket: " + error.message))
-      );
-    }
+      clientSocket.on("connect_error", (error) => {
+        reject(new Error("Failed to connect to socket: " + error.message));
+      });
+    },
   );
 };

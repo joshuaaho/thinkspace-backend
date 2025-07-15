@@ -1,28 +1,41 @@
-import { Request, Response } from "express";
 import { inject, injectable } from "inversify";
 import CONSTANTS from "@containers/constants";
 import GetUnreadCount from "@application/useCases/notifications/getUnreadCount";
 import { AuthenticatedRequest } from "@presentation/middleware/auth";
+import {
+  Controller,
+  Get,
+  Route,
+  Response,
+  SuccessResponse,
+  Request,
+  Security,
+  Tags,
+} from "tsoa";
+import { HTTPError } from "@presentation/middleware/errorHandler";
 
 @injectable()
-class GetUnreadCountController {
+@Tags("Notifications")
+@Route("notifications")
+@Security("bearerAuth")
+export class GetUnreadCountController extends Controller {
   private getUnreadCountUseCase: GetUnreadCount;
 
   constructor(
     @inject(CONSTANTS.GetUnreadCountUseCase)
-    getUnreadCount: GetUnreadCount
+    getUnreadCount: GetUnreadCount,
   ) {
+    super();
     this.getUnreadCountUseCase = getUnreadCount;
   }
 
-  public async handleGetUnreadCount(
-    req: Request,
-    res: Response
-  ): Promise<Response> {
-    const { requestor } = req as AuthenticatedRequest;
-    const result = await this.getUnreadCountUseCase.execute(requestor);
-    return res.status(200).json(result);
+  @Get("/unread-count")
+  @Response<HTTPError>(401, "Unauthenticated")
+  @SuccessResponse("200", "Unread Count Retrieved Successfully")
+  async handleGetUnreadCount(@Request() req: AuthenticatedRequest) {
+    const data = await this.getUnreadCountUseCase.execute(req.user);
+
+    this.setStatus(200);
+    return data;
   }
 }
-
-export default GetUnreadCountController; 

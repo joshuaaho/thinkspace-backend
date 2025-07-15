@@ -9,9 +9,14 @@ class S3FileUploadService implements IFileUploadService {
 
   constructor() {
     this.s3 = new aws.S3({
-      region: process.env.S3_REGION,
-      accessKeyId: process.env.S3_ACCESSKEYID,
-      secretAccessKey: process.env.S3_SECRETACCESSKEY,
+      region: process.env.S3_REGION || "us-east-1",
+      s3ForcePathStyle: true,
+      endpoint: process.env.S3_ENDPOINT_URL || "https://s3.amazonaws.com",
+      credentials: {
+        accessKeyId: process.env.S3_ACCESS_KEY_ID || "default_access_key",
+        secretAccessKey:
+          process.env.S3_SECRET_ACCESS_KEY || "default_secret_key",
+      },
       signatureVersion: "v4",
     });
   }

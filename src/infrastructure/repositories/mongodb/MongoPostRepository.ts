@@ -5,7 +5,6 @@ import MongoPostMapper from "@infrastructure/mappers/MongoPostMapper";
 import IPostRepository, {
   PostQueryOptions,
 } from "@domain/repositories/IPostRepository";
-import { SortDirection } from "mongodb";
 
 import db from "@infrastructure/repositories/mongodb/MongoClient";
 
@@ -22,12 +21,12 @@ class MongoPostRepository
     switch (sortBy) {
       case "oldest":
         return { $sort: { createdAt: 1 } };
-      case "most-liked":
+      case "mostLiked":
         return [
           { $addFields: { likeCount: { $size: "$likedBy" } } },
           { $sort: { likeCount: -1 } },
         ];
-      default: // newest
+      default:
         return { $sort: { createdAt: -1 } };
     }
   }

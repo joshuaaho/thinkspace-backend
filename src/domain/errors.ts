@@ -28,16 +28,14 @@ export class NotLikedCommentError extends Error {
   }
 }
 
-  export class SelfLikedPostError extends Error {
-    constructor(message: string) {
-      super(message);
-    }
+export class SelfLikedPostError extends Error {
+  constructor(message: string) {
+    super(message);
   }
+}
 
-  export class SelfLikedCommentError extends Error {
-    constructor(message: string) {
-      super(message);
-    }
+export class SelfLikedCommentError extends Error {
+  constructor(message: string) {
+    super(message);
   }
-
-
+}

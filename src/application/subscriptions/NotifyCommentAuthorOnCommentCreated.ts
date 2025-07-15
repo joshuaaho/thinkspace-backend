@@ -17,10 +17,12 @@ class NotifyCommentAuthorOnCommentCreated implements IHandle {
   private notificationRepo: INotificationRepository;
 
   constructor(
-      @inject(CONSTANTS.UserRepository) userRepo: IUserRepository,
+    @inject(CONSTANTS.UserRepository) userRepo: IUserRepository,
     @inject(CONSTANTS.CommentRepository) commentRepo: ICommentRepository,
-    @inject(CONSTANTS.NotificationService) notificationService: INotificationService,
-    @inject(CONSTANTS.NotificationRepository) notificationRepo: INotificationRepository
+    @inject(CONSTANTS.NotificationService)
+    notificationService: INotificationService,
+    @inject(CONSTANTS.NotificationRepository)
+    notificationRepo: INotificationRepository,
   ) {
     this.userRepo = userRepo;
     this.commentRepo = commentRepo;
@@ -29,51 +31,48 @@ class NotifyCommentAuthorOnCommentCreated implements IHandle {
   }
 
   setupSubscriptions(): void {
-    DomainEvents.register(this.onCommentCreated.bind(this), CommentCreated.name);
+    DomainEvents.register(
+      this.onCommentCreated.bind(this),
+      CommentCreated.name,
+    );
   }
 
   public async onCommentCreated(event: CommentCreated): Promise<void> {
     const { comment } = event;
 
-    // Only notify if this is a reply to another comment
     if (!comment.parentCommentId) {
       return;
     }
 
- 
-    // Find the parent comment
-    const parentComment = (await this.commentRepo.findById(comment.parentCommentId.value)).unwrap();
+    const parentComment = (
+      await this.commentRepo.findById(comment.parentCommentId.value)
+    ).unwrap();
 
     if (comment.authorId.equals(parentComment.authorId)) {
       return;
     }
-    
-    // If we can't find the parent comment, just return
 
-    // Find the parent comment's author
-    const parentCommentAuthor = (await this.userRepo.findById(parentComment.authorId.value)).unwrap();
-    
-    // If we can't find the author, just return
-    
-    const author = (await this.userRepo.findById(comment.authorId.value)).unwrap();
+    const parentCommentAuthor = (
+      await this.userRepo.findById(parentComment.authorId.value)
+    ).unwrap();
 
-  
-    // Create notification
+    const author = (
+      await this.userRepo.findById(comment.authorId.value)
+    ).unwrap();
+
     const notification = Notification.create({
       to: parentCommentAuthor.id,
       from: author.id,
       message: `${author.username.value} replied to your comment: "${comment.content.value}"`,
       isRead: false,
       resourceId: comment.postId.value,
-      redirectToResourceType: "posts"
+      redirectToResourceType: "posts",
     });
 
-    // Save notification to the database
     await this.notificationRepo.save(notification);
 
-    // Send notification through the notification service
     await this.notificationService.sendNotification(notification);
   }
 }
 
-export default NotifyCommentAuthorOnCommentCreated; 
+export default NotifyCommentAuthorOnCommentCreated;

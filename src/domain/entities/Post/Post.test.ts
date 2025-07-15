@@ -5,13 +5,18 @@ import Url from "@domain/common/Url";
 import { expect, describe, it } from "vitest";
 import EntityId from "@domain/core/EntityId";
 import Tag from "@domain/entities/Post/Tag";
-import { ValidationError, NotLikedPostError, AlreadyLikedPostError, SelfLikedPostError } from "@domain/errors";
-import valueEqual from "value-equal";
-import User from '@domain/entities/User';
-import { UnauthorizedError } from '@application/useCases/errors';
-import Email from '@domain/entities/User/Email';
-import Username from '@domain/entities/User/Username';
-import Password from '@domain/entities/User/Password';
+import {
+  ValidationError,
+  NotLikedPostError,
+  AlreadyLikedPostError,
+  SelfLikedPostError,
+} from "@domain/errors";
+
+import User from "@domain/entities/User";
+import { UnauthorizedError } from "@application/useCases/errors";
+import Email from "@domain/entities/User/Email";
+import Username from "@domain/entities/User/Username";
+import Password from "@domain/entities/User/Password";
 
 describe("Post", () => {
   describe("creating a post with basic properties", () => {
@@ -49,13 +54,13 @@ describe("Post", () => {
     });
   });
 
-
-
   describe("creating a post with too many tags", () => {
     const authorId = EntityId.create("123");
     const title = Title.create("Test Title").unwrap();
     const content = Content.create("Test content").unwrap();
-    const tags = Array(6).fill(null).map((_, i) => Tag.create(`tag${i}`).unwrap());
+    const tags = Array(6)
+      .fill(null)
+      .map((_, i) => Tag.create(`tag${i}`).unwrap());
     const result = Post.create({
       authorId,
       title,
@@ -123,7 +128,7 @@ describe("Post", () => {
       authorId,
       title: Title.create("Test Title").unwrap(),
       content: Content.create("Test content").unwrap(),
-      likedBy: [likerId]
+      likedBy: [likerId],
     }).unwrap();
 
     post.removeLikeFromUser(likerId);
@@ -251,260 +256,262 @@ describe("Post", () => {
   });
 });
 
-describe('Post Entity', () => {
-  describe('create a post', () => {
-    const authorId = EntityId.create('author1');
-    const title = Title.create('Test Post').unwrap();
-    const content = Content.create('Test content').unwrap();
+describe("Post Entity", () => {
+  describe("create a post", () => {
+    const authorId = EntityId.create("author1");
+    const title = Title.create("Test Post").unwrap();
+    const content = Content.create("Test content").unwrap();
     const post = Post.create({
       authorId,
       title,
-      content
+      content,
     }).unwrap();
 
-    it('should have the correct title', () => {
+    it("should have the correct title", () => {
       expect(post.title).toEqual(title);
     });
 
-    it('should have the correct content', () => {
+    it("should have the correct content", () => {
       expect(post.content).toEqual(content);
     });
 
-    it('should have the correct author ID', () => {
+    it("should have the correct author ID", () => {
       expect(post.authorId).toEqual(authorId);
     });
 
-    it('should have empty tags by default', () => {
+    it("should have empty tags by default", () => {
       expect(post.tags).toEqual([]);
     });
 
-    it('should have empty image URLs by default', () => {
+    it("should have empty image URLs by default", () => {
       expect(post.imgUrls).toEqual([]);
     });
 
-    it('should have empty liked by list by default', () => {
+    it("should have empty liked by list by default", () => {
       expect(post.likedBy).toEqual([]);
     });
 
-    it('should have a generated ID when not provided', () => {
+    it("should have a generated ID when not provided", () => {
       expect(post.id).toBeDefined();
     });
   });
 
-  describe('create a post with too many tags', () => {
-    const authorId = EntityId.create('author1');
-    const title = Title.create('Test Post').unwrap();
-    const content = Content.create('Test content').unwrap();
-    const tags = Array(6).fill(null).map((_, i) => Tag.create(`tag${i}`).unwrap());
+  describe("create a post with too many tags", () => {
+    const authorId = EntityId.create("author1");
+    const title = Title.create("Test Post").unwrap();
+    const content = Content.create("Test content").unwrap();
+    const tags = Array(6)
+      .fill(null)
+      .map((_, i) => Tag.create(`tag${i}`).unwrap());
 
-    it('should return validation error', () => {
+    it("should return validation error", () => {
       const result = Post.create({
         authorId,
         title,
         content,
-        tags
+        tags,
       });
 
       expect(result.unwrapErr()).toBeInstanceOf(ValidationError);
     });
   });
 
-  describe('like a post', () => {
-    const authorId = EntityId.create('author1');
-    const userId = EntityId.create('user1');
-    const title = Title.create('Test Post').unwrap();
-    const content = Content.create('Test content').unwrap();
+  describe("like a post", () => {
+    const authorId = EntityId.create("author1");
+    const userId = EntityId.create("user1");
+    const title = Title.create("Test Post").unwrap();
+    const content = Content.create("Test content").unwrap();
     const post = Post.create({
       authorId,
       title,
-      content
+      content,
     }).unwrap();
 
-    it('should add user to liked by list', () => {
+    it("should add user to liked by list", () => {
       post.addLikeFromUser(userId);
       expect(post.likedBy.length).toBe(1);
     });
   });
 
-  describe('like a post twice', () => {
-    const authorId = EntityId.create('author1');
-    const userId = EntityId.create('user1');
-    const title = Title.create('Test Post').unwrap();
-    const content = Content.create('Test content').unwrap();
+  describe("like a post twice", () => {
+    const authorId = EntityId.create("author1");
+    const userId = EntityId.create("user1");
+    const title = Title.create("Test Post").unwrap();
+    const content = Content.create("Test content").unwrap();
     const post = Post.create({
       authorId,
       title,
-      content
+      content,
     }).unwrap();
 
-    it('should return error when liking twice', () => {
+    it("should return error when liking twice", () => {
       post.addLikeFromUser(userId);
       const result = post.addLikeFromUser(userId);
       expect(result.unwrapErr()).toBeInstanceOf(AlreadyLikedPostError);
     });
   });
 
-  describe('like own post', () => {
-    const authorId = EntityId.create('author1');
-    const title = Title.create('Test Post').unwrap();
-    const content = Content.create('Test content').unwrap();
+  describe("like own post", () => {
+    const authorId = EntityId.create("author1");
+    const title = Title.create("Test Post").unwrap();
+    const content = Content.create("Test content").unwrap();
     const post = Post.create({
       authorId,
       title,
-      content
+      content,
     }).unwrap();
 
-    it('should return error when author likes own post', () => {
+    it("should return error when author likes own post", () => {
       const result = post.addLikeFromUser(authorId);
       expect(result.unwrapErr()).toBeInstanceOf(SelfLikedPostError);
     });
   });
 
-  describe('unlike a post', () => {
-    const authorId = EntityId.create('author1');
-    const userId = EntityId.create('user1');
-    const title = Title.create('Test Post').unwrap();
-    const content = Content.create('Test content').unwrap();
+  describe("unlike a post", () => {
+    const authorId = EntityId.create("author1");
+    const userId = EntityId.create("user1");
+    const title = Title.create("Test Post").unwrap();
+    const content = Content.create("Test content").unwrap();
     const post = Post.create({
       authorId,
       title,
-      content
+      content,
     }).unwrap();
 
-    it('should remove user from liked by list', () => {
+    it("should remove user from liked by list", () => {
       post.addLikeFromUser(userId);
       post.removeLikeFromUser(userId);
       expect(post.likedBy.length).toBe(0);
     });
   });
 
-  describe('unlike a post that was not liked', () => {
-    const authorId = EntityId.create('author1');
-    const userId = EntityId.create('user1');
-    const title = Title.create('Test Post').unwrap();
-    const content = Content.create('Test content').unwrap();
+  describe("unlike a post that was not liked", () => {
+    const authorId = EntityId.create("author1");
+    const userId = EntityId.create("user1");
+    const title = Title.create("Test Post").unwrap();
+    const content = Content.create("Test content").unwrap();
     const post = Post.create({
       authorId,
       title,
-      content
+      content,
     }).unwrap();
 
-    it('should return error when unliking without liking', () => {
+    it("should return error when unliking without liking", () => {
       const result = post.removeLikeFromUser(userId);
       expect(result.unwrapErr()).toBeInstanceOf(NotLikedPostError);
     });
   });
 
-  describe('edit post', () => {
-    const authorId = EntityId.create('author1');
-    const title = Title.create('Test Post').unwrap();
-    const content = Content.create('Test content').unwrap();
+  describe("edit post", () => {
+    const authorId = EntityId.create("author1");
+    const title = Title.create("Test Post").unwrap();
+    const content = Content.create("Test content").unwrap();
     const post = Post.create({
       authorId,
       title,
-      content
+      content,
     }).unwrap();
     const author = User.create({
       id: authorId,
-      email: Email.create('test@test.com').unwrap(),
-      password: Password.create({ value: 'Test123!@#B' }).unwrap(),
-      username: Username.create('testuser').unwrap()
+      email: Email.create("test@test.com").unwrap(),
+      password: Password.create({ value: "Test123!@#B" }).unwrap(),
+      username: Username.create("testuser").unwrap(),
     });
-    const newTitle = Title.create('Updated Title').unwrap();
-    const newContent = Content.create('Updated content').unwrap();
-    const newTags = [Tag.create('tag1').unwrap()];
-    const newImgUrls = [Url.create('https://example.com/image.jpg').unwrap()];
+    const newTitle = Title.create("Updated Title").unwrap();
+    const newContent = Content.create("Updated content").unwrap();
+    const newTags = [Tag.create("tag1").unwrap()];
+    const newImgUrls = [Url.create("https://example.com/image.jpg").unwrap()];
 
-    it('should update title when edited by author', () => {
+    it("should update title when edited by author", () => {
       post.updateFromUserEdits(author, {
         title: newTitle,
         content: newContent,
         tags: newTags,
-        imgUrls: newImgUrls
+        imgUrls: newImgUrls,
       });
       expect(post.title).toEqual(newTitle);
     });
 
-    it('should update content when edited by author', () => {
+    it("should update content when edited by author", () => {
       post.updateFromUserEdits(author, {
         title: newTitle,
         content: newContent,
         tags: newTags,
-        imgUrls: newImgUrls
+        imgUrls: newImgUrls,
       });
       expect(post.content).toEqual(newContent);
     });
 
-    it('should update tags when edited by author', () => {
+    it("should update tags when edited by author", () => {
       post.updateFromUserEdits(author, {
         title: newTitle,
         content: newContent,
         tags: newTags,
-        imgUrls: newImgUrls
+        imgUrls: newImgUrls,
       });
       expect(post.tags).toEqual(newTags);
     });
 
-    it('should update image URLs when edited by author', () => {
+    it("should update image URLs when edited by author", () => {
       post.updateFromUserEdits(author, {
         title: newTitle,
         content: newContent,
         tags: newTags,
-        imgUrls: newImgUrls
+        imgUrls: newImgUrls,
       });
       expect(post.imgUrls).toEqual(newImgUrls);
     });
   });
 
-  describe('edit post by unauthorized user', () => {
-    const authorId = EntityId.create('author1');
-    const unauthorizedUserId = EntityId.create('user2');
-    const title = Title.create('Test Post').unwrap();
-    const content = Content.create('Test content').unwrap();
+  describe("edit post by unauthorized user", () => {
+    const authorId = EntityId.create("author1");
+    const unauthorizedUserId = EntityId.create("user2");
+    const title = Title.create("Test Post").unwrap();
+    const content = Content.create("Test content").unwrap();
     const post = Post.create({
       authorId,
       title,
-      content
+      content,
     }).unwrap();
     const unauthorizedUser = User.create({
       id: unauthorizedUserId,
-      email: Email.create('test2@test.com').unwrap(),
-      password: Password.create({ value: 'Test123!@#B' }).unwrap(),
-      username: Username.create('testuser2').unwrap()
+      email: Email.create("test2@test.com").unwrap(),
+      password: Password.create({ value: "Test123!@#B" }).unwrap(),
+      username: Username.create("testuser2").unwrap(),
     });
-    const newTitle = Title.create('Updated Title').unwrap();
+    const newTitle = Title.create("Updated Title").unwrap();
 
-    it('should return unauthorized error', () => {
+    it("should return unauthorized error", () => {
       const result = post.updateFromUserEdits(unauthorizedUser, {
-        title: newTitle
+        title: newTitle,
       });
       expect(result.unwrapErr()).toBeInstanceOf(UnauthorizedError);
     });
 
-    it('should not update post', () => {
+    it("should not update post", () => {
       post.updateFromUserEdits(unauthorizedUser, {
-        title: newTitle
+        title: newTitle,
       });
       expect(post.title).toEqual(title);
     });
   });
 
-  describe('delete post', () => {
-    const authorId = EntityId.create('author1');
-    const unauthorizedUserId = EntityId.create('user2');
-    const title = Title.create('Test Post').unwrap();
-    const content = Content.create('Test content').unwrap();
+  describe("delete post", () => {
+    const authorId = EntityId.create("author1");
+    const unauthorizedUserId = EntityId.create("user2");
+    const title = Title.create("Test Post").unwrap();
+    const content = Content.create("Test content").unwrap();
     const post = Post.create({
       authorId,
       title,
-      content
+      content,
     }).unwrap();
 
-    it('should allow author to delete post', () => {
+    it("should allow author to delete post", () => {
       expect(post.canBeDeletedBy(authorId)).toBe(true);
     });
 
-    it('should not allow other users to delete post', () => {
+    it("should not allow other users to delete post", () => {
       expect(post.canBeDeletedBy(unauthorizedUserId)).toBe(false);
     });
   });

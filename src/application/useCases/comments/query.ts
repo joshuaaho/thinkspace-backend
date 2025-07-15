@@ -3,13 +3,15 @@ import CONSTANTS from "@containers/constants";
 import ICommentRepository from "@domain/repositories/ICommentRepository";
 import IUserRepository from "@domain/repositories/IUserRepository";
 import { Result, Ok } from "ts-results-es";
+import { SortBy } from "@domain/repositories/types";
 
-export type QueryCommentsCommand = Partial<{
-  postId: string;
-  offset: number;
-  limit: number;
-  authorId: string;
-}>;
+export interface QueryCommentsCommand {
+  postId?: string;
+  offset?: number;
+  limit?: number;
+  authorId?: string;
+  sortBy?: SortBy;
+}
 
 export type QueryCommentsResponse = {
   id: string;
@@ -30,23 +32,28 @@ class QueryComments {
 
   constructor(
     @inject(CONSTANTS.CommentRepository) commentRepo: ICommentRepository,
-    @inject(CONSTANTS.UserRepository) userRepo: IUserRepository
+    @inject(CONSTANTS.UserRepository) userRepo: IUserRepository,
   ) {
     this.commentRepo = commentRepo;
     this.userRepo = userRepo;
   }
 
-  public async execute(request: QueryCommentsCommand): Promise<Result<QueryCommentsResponse, never>> {
+  public async execute(
+    request: QueryCommentsCommand,
+  ): Promise<Result<QueryCommentsResponse, never>> {
     const comments = await this.commentRepo.query({
       postId: request.postId,
       offset: request.offset,
       limit: request.limit,
       authorId: request.authorId,
+      sortBy: request.sortBy,
     });
 
     const queryCommentsResponse = await Promise.all(
       comments.map(async (comment) => {
-        const user = (await this.userRepo.findById(comment.authorId.value)).unwrap();
+        const user = (
+          await this.userRepo.findById(comment.authorId.value)
+        ).unwrap();
 
         return {
           id: comment.id.value,
@@ -55,15 +62,15 @@ class QueryComments {
           authorUsername: user.username.value,
           authorProfileImgUrl: user.profileImgUrl.value,
           createdAt: comment.createdAt.toString(),
-          likedBy: comment.likedBy.map(id => id.value),
+          likedBy: comment.likedBy.map((id) => id.value),
           parentCommentId: comment.parentCommentId?.value,
           postId: comment.postId.value,
         };
-      })
+      }),
     );
 
     return Ok(queryCommentsResponse);
   }
 }
 
-export default QueryComments; 
+export default QueryComments;

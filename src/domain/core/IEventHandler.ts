@@ -1,4 +1,3 @@
-
-export interface IHandle{
+export interface IHandle {
   setupSubscriptions(): void;
 }

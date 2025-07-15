@@ -11,4 +11,4 @@ class CommentDeleted implements IDomainEvent {
   }
 }
 
-export default CommentDeleted; 
+export default CommentDeleted;

@@ -17,6 +17,20 @@ class MongoCommentRepository
     super(db.collection("comments"), new MongoCommentMapper());
   }
 
+  private getSortStage(sortBy: string) {
+    switch (sortBy) {
+      case "oldest":
+        return { $sort: { createdAt: 1 } };
+      case "mostLiked":
+        return [
+          { $addFields: { likeCount: { $size: "$likedBy" } } },
+          { $sort: { likeCount: -1 } },
+        ];
+      default: // newest
+        return { $sort: { createdAt: -1 } };
+    }
+  }
+
   async findByPostId(postId: string): Promise<Comment[]> {
     const comments = await this.collectionInstance.find({ postId }).toArray();
 
@@ -37,20 +51,31 @@ class MongoCommentRepository
     return comments.map((comment) => this.mapper.toDomain(comment));
   }
 
-
   async query({
     offset = 0,
     limit = 10,
     postId,
     authorId,
+    sortBy = "newest",
   }: Partial<CommentQueryOptions>): Promise<Comment[]> {
-    const dalEntities = await this.collectionInstance
-      .find({
+    const matchStage = {
+      $match: {
         ...(postId && { postId }),
         ...(authorId && { authorId }),
-      })
-      .skip(offset)
-      .limit(limit)
+      },
+    };
+
+    const sortStage = this.getSortStage(sortBy);
+
+    const pipeline = [
+      matchStage,
+      ...(Array.isArray(sortStage) ? sortStage : [sortStage]),
+      { $skip: offset },
+      { $limit: limit },
+    ];
+
+    const dalEntities = await this.collectionInstance
+      .aggregate(pipeline)
       .toArray();
 
     return dalEntities.map((entity) => this.mapper.toDomain(entity));

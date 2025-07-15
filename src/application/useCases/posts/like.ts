@@ -20,8 +20,13 @@ class LikePost {
 
   public async execute(
     request: LikePostCommand,
-    requestor: User
-  ): Promise<Result<void, ResourceNotFoundError | AlreadyLikedPostError | SelfLikedPostError>> {
+    requestor: User,
+  ): Promise<
+    Result<
+      void,
+      ResourceNotFoundError | AlreadyLikedPostError | SelfLikedPostError
+    >
+  > {
     const somePost = await this.postRepo.findById(request.postId);
     if (somePost.isNone()) {
       return Err(new ResourceNotFoundError("Post not found"));
@@ -38,4 +43,4 @@ class LikePost {
   }
 }
 
-export default LikePost; 
+export default LikePost;

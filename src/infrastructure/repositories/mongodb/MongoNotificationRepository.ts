@@ -19,7 +19,6 @@ class MongoNotificationRepository
 
   async saveMany(notifications: Notification[]): Promise<void> {
     for (const notification of notifications) {
-   
       await this.save(notification);
     }
   }
@@ -38,6 +37,7 @@ class MongoNotificationRepository
       .find({
         ...(to && { to }),
       })
+      .sort({ isRead: 1, createdAt: -1 })
       .skip(offset)
       .limit(limit)
       .toArray();

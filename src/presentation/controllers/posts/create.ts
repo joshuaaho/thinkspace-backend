@@ -9,6 +9,10 @@ import {
   Middlewares,
   SuccessResponse,
   Response,
+  Security,
+  Route,
+  Post,
+  Tags,
 } from "tsoa";
 import {
   Request as ExpressRequest,
@@ -19,11 +23,12 @@ import CreatePostUseCase, {
   CreatePostCommand,
 } from "@application/useCases/posts/create";
 import { HTTPError } from "@presentation/middleware/errorHandler";
+import { AuthenticatedRequest } from "@presentation/middleware/auth";
 
 async function customMiddleware(
   req: ExpressRequest,
   res: ExpressResponse,
-  next: ExpressNextFunction
+  next: ExpressNextFunction,
 ) {
   const schema = z.object({
     title: z.string(),
@@ -41,19 +46,28 @@ async function customMiddleware(
 }
 
 @injectable()
-class CreatePostController extends Controller {
+@Tags("Posts")
+@Route("posts")
+@Security("bearerAuth")
+export class CreatePostController extends Controller {
   private createPostUseCase: CreatePostUseCase;
 
   constructor(
-    @inject(CONSTANTS.CreatePostUseCase) createPostUseCase: CreatePostUseCase
+    @inject(CONSTANTS.CreatePostUseCase) createPostUseCase: CreatePostUseCase,
   ) {
     super();
     this.createPostUseCase = createPostUseCase;
   }
+
+  @Post()
   @Middlewares(customMiddleware)
-  @Response<HTTPError>(422, "Validation Failed")
-  @SuccessResponse("201", "Created") // Custom success response
-  async createPost(@Request() req: any, @Body() body: CreatePostCommand) {
+  @Response<HTTPError>(400, "Validation error or invalid HTTP request")
+  @Response<HTTPError>(401, "Unauthenticated")
+  @SuccessResponse("201", "Created")
+  async createPost(
+    @Request() req: AuthenticatedRequest,
+    @Body() body: CreatePostCommand,
+  ) {
     const result = await this.createPostUseCase.execute(body, req.user);
 
     if (result.isErr()) {
@@ -63,5 +77,3 @@ class CreatePostController extends Controller {
     return result.unwrap();
   }
 }
-
-export default CreatePostController;

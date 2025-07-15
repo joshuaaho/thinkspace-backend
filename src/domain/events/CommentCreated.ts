@@ -11,4 +11,4 @@ class CommentCreated implements IDomainEvent {
   }
 }
 
-export default CommentCreated; 
+export default CommentCreated;

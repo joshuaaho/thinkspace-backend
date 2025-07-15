@@ -6,43 +6,37 @@ import {
 } from "@utils/testData/mocks";
 import {
   InvalidRequestError,
-  UnauthenticatedError,
   ResourceNotFoundError,
 } from "@application/useCases/errors";
 import { ValidationError } from "@domain/errors";
-import {
-  createUserOne,
-  createUserTwo,
-
-  createMessageOne,
-} from "@utils/testData/testEntities";
+import { createUserOne, createUserTwo } from "@utils/testData/testEntities";
 import CreateMessageUseCase from "./create";
 
 describe("Create Message Use Case", () => {
-
   describe("when recipient is not found", async () => {
     const testUser = createUserOne();
     const mockUserRepo = createUserRepositoryMock();
-    mockUserRepo.findById
-      .mockResolvedValueOnce(None);
+    mockUserRepo.findById.mockResolvedValueOnce(None);
     const mockMessageRepo = createMessageRepositoryMock();
 
     const createMessage = new CreateMessageUseCase(
       mockMessageRepo,
-      mockUserRepo
+      mockUserRepo,
     );
 
-    const result = await createMessage.execute({
-      recipientId: "non-existent-user-id",
-      text: "Hello",
-    },testUser);
+    const result = await createMessage.execute(
+      {
+        recipientId: "non-existent-user-id",
+        text: "Hello",
+      },
+      testUser,
+    );
 
     it("should return resource not found error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(ResourceNotFoundError);
     });
 
     it("should not save  message", () => {
-
       expect(mockMessageRepo.save).not.toHaveBeenCalled();
     });
   });
@@ -55,19 +49,20 @@ describe("Create Message Use Case", () => {
       .mockResolvedValueOnce(Some(testUser))
       .mockResolvedValueOnce(Some(testRecipient));
 
-
     const mockMessageRepo = createMessageRepositoryMock();
 
     const createMessage = new CreateMessageUseCase(
-
       mockMessageRepo,
-      mockUserRepo
+      mockUserRepo,
     );
 
-    const result = await createMessage.execute({
-      recipientId: testRecipient.id.value,
-      text: "",
-    },testUser);
+    const result = await createMessage.execute(
+      {
+        recipientId: testRecipient.id.value,
+        text: "",
+      },
+      testUser,
+    );
 
     it("should return validation error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(ValidationError);
@@ -88,15 +83,17 @@ describe("Create Message Use Case", () => {
     const mockMessageRepo = createMessageRepositoryMock();
 
     const createMessage = new CreateMessageUseCase(
-
       mockMessageRepo,
-      mockUserRepo
+      mockUserRepo,
     );
 
-    const result = await createMessage.execute({
-      recipientId: testUser.id.value,
-      text: "Hello",
-    },testUser);
+    const result = await createMessage.execute(
+      {
+        recipientId: testUser.id.value,
+        text: "Hello",
+      },
+      testUser,
+    );
 
     it("should return invalid request error", () => {
       expect(result.unwrapErr()).toBeInstanceOf(InvalidRequestError);
@@ -118,15 +115,17 @@ describe("Create Message Use Case", () => {
     const mockMessageRepo = createMessageRepositoryMock();
 
     const createMessage = new CreateMessageUseCase(
-
       mockMessageRepo,
-      mockUserRepo
+      mockUserRepo,
     );
 
-    const result = await createMessage.execute({
-      recipientId: testRecipient.id.value,
-      text: "Hello",
-    },testUser);
+    const result = await createMessage.execute(
+      {
+        recipientId: testRecipient.id.value,
+        text: "Hello",
+      },
+      testUser,
+    );
 
     it("should save the message", () => {
       expect(mockMessageRepo.save).toHaveBeenCalled();

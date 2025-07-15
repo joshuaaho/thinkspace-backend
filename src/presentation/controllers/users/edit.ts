@@ -1,54 +1,79 @@
-import { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
 import CONSTANTS from "@containers/constants";
 import { z } from "zod";
 import { ToZodSchema } from "@zod";
-import { InvalidRequestError } from "@application/useCases/errors";
 import { AuthenticatedRequest } from "@presentation/middleware/auth";
 import EditUser, { EditUserCommand } from "@application/useCases/users/edit";
+import {
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+  NextFunction as ExpressNextFunction,
+} from "express";
+import {
+  Controller,
+  Middlewares,
+  Route,
+  Response,
+  SuccessResponse,
+  Body,
+  Request,
+  Security,
+  Patch,
+  Tags,
+} from "tsoa";
+import { HTTPError } from "@presentation/middleware/errorHandler";
+
+async function customMiddleware(
+  req: ExpressRequest,
+  res: ExpressResponse,
+  next: ExpressNextFunction,
+) {
+  const schema = z.object({
+    work: z.string().optional(),
+    bio: z.string().optional(),
+    education: z.string().optional(),
+    interest: z.string().optional(),
+    location: z.string().optional(),
+    profileImgUrl: z.string().url().optional(),
+    themePreference: z.enum(["light", "dark", "system"]).optional(),
+  } satisfies ToZodSchema<EditUserCommand>);
+
+  const validationResult = schema.safeParse(req.body);
+
+  if (!validationResult.success) {
+    return next(validationResult.error);
+  }
+  return next();
+}
 
 @injectable()
-class EditUserController {
+@Tags("Users")
+@Route("users")
+@Security("bearerAuth")
+export class EditUserController extends Controller {
   private editUserUseCase: EditUser;
 
-  constructor(
-    @inject(CONSTANTS.EditUserUseCase) editUserUseCase: EditUser
-  ) {
+  constructor(@inject(CONSTANTS.EditUserUseCase) editUserUseCase: EditUser) {
+    super();
     this.editUserUseCase = editUserUseCase;
   }
 
-  async handleEdit(req: Request, res: Response, next: NextFunction) {
-    try {
-      const schema = z.object({
-        work: z.string().optional(),
-        bio: z.string().optional(),
-        education: z.string().optional(),
-        interest: z.string().optional(),
-        location: z.string().optional(),
-        profileImgUrl: z.string().url().optional(),
-        themePreference: z.enum(["light", "dark", "system"]).optional(),
-      } satisfies ToZodSchema<EditUserCommand>);
+  @Patch("/me")
+  @Middlewares(customMiddleware)
+  @Response<HTTPError>(400, "Validation error or invalid HTTP request")
+  @Response<HTTPError>(401, "Unauthenticated")
+  @SuccessResponse("200", "User Edited Successfully")
+  async handleEdit(
+    @Body() body: EditUserCommand,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    const data = await this.editUserUseCase.execute(body, req.user);
 
-      const validationResult = schema.safeParse(req.body);
-
-      if (!validationResult.success) {
-        return res.status(400).json({ error: "Invalid HTTP request" });
-      }
-
-      const result = await this.editUserUseCase.execute(
-        validationResult.data,
-        (req as AuthenticatedRequest).requestor
-      );
-
-      if (result.isErr()) {
-        return res.status(400).json({ error: result.error.message });
-      }
-
-      return res.status(200).json();
-    } catch (error) {
-      next(error);
+    if (data.isErr()) {
+      throw data.error;
     }
+
+    this.setStatus(200);
+    return;
   }
 }
-
-export default EditUserController;

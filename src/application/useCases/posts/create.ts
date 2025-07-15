@@ -1,4 +1,4 @@
-import { Err, Ok, Result } from "ts-results-es";
+import { Ok, Result } from "ts-results-es";
 import IPostRepository from "@domain/repositories/IPostRepository";
 import { injectable, inject } from "inversify";
 import Title from "@domain/entities/Post/Title";
@@ -31,7 +31,7 @@ class CreatePost {
 
   public async execute(
     request: CreatePostCommand,
-    requestor: User
+    requestor: User,
   ): Promise<Result<CreatePostResponse, ValidationError>> {
     const titleOrError = Title.create(request.title);
 
@@ -46,7 +46,7 @@ class CreatePost {
     }
 
     const urlsOrError = Result.all(
-      request.imgUrls?.map((imgUrl) => Url.create(imgUrl)) ?? []
+      request.imgUrls?.map((imgUrl) => Url.create(imgUrl)) ?? [],
     );
 
     if (urlsOrError.isErr()) {
@@ -54,7 +54,7 @@ class CreatePost {
     }
 
     const tagsOrError = Result.all(
-      request.tags?.map((tag) => Tag.create(tag)) ?? []
+      request.tags?.map((tag) => Tag.create(tag)) ?? [],
     );
 
     if (tagsOrError.isErr()) {

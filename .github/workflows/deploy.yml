@@ -1,0 +1,75 @@
+name: deploy
+on:
+  push:
+  workflow_run:
+    workflows: [test]
+    branches: [main]
+    types:
+      - completed
+
+# env:
+#   PROJECT_ID: thinkspace-backend # TODO: update Google Cloud project id
+#   GAR_LOCATION: asia-east2 # TODO: update Artifact Registry location
+#   REPOSITORY: thinkspace-backend-repo # TODO: update Artifact Registry repository name
+#   SERVICE: thinkspace-backend-service # TODO: update Cloud Run service name
+#   REGION: asia-east2 # TODO: update Cloud Run service region
+
+jobs:
+  deploy:
+    environment: production
+    permissions:
+      contents: "read"
+      id-token: "write"
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Google Auth
+        id: auth
+        uses: "google-github-actions/auth@v2"
+        with:
+          credentials_json: "${{ secrets.GCP_SA_KEY }}"
+
+      - name: Docker Auth
+        id: docker-auth
+        uses: "docker/login-action@v1"
+        with:
+          registry: ${{ vars.GAR_LOCATION }}-docker.pkg.dev
+          username: _json_key
+          password: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Build and Push Container
+        run: |-
+          docker build -t "${{ vars.GAR_LOCATION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/${{ vars.IMAGE_REPO }}/${{ vars.CLOUD_RUN_SERVICE }}:${{ github.sha }}" ./
+          docker push "${{ vars.GAR_LOCATION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/${{ vars.IMAGE_REPO }}/${{ vars.CLOUD_RUN_SERVICE }}:${{ github.sha }}"
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ vars.CLOUD_RUN_SERVICE }}
+          region: ${{ vars.REGION }}
+          image: ${{ vars.GAR_LOCATION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/${{ vars.IMAGE_REPO }}/${{ vars.CLOUD_RUN_SERVICE }}:${{ github.sha }}
+          env_vars: |-
+            BACKEND_SERVER_PORT=${{ vars.BACKEND_SERVER_PORT }}
+            NODE_ENV=production
+            JWT_ACCESS_TOKEN_SECRET=${{ secrets.JWT_ACCESS_TOKEN_SECRET }}
+            JWT_REFRESH_TOKEN_SECRET=${{ secrets.JWT_REFRESH_TOKEN_SECRET }}
+            JWT_ACCESS_EXPIRATION=${{ secrets.JWT_ACCESS_EXPIRATION }}
+            JWT_REFRESH_EXPIRATION=${{ secrets.JWT_REFRESH_EXPIRATION }}
+            MONGODB_URI=${{ secrets.MONGODB_URI }}
+            FRONTEND_SERVER=${{ vars.FRONTEND_SERVER }}
+            S3_ACCESS_KEY_ID=${{ secrets.S3_ACCESS_KEY_ID }}
+            S3_SECRET_ACCESS_KEY=${{ secrets.S3_SECRET_ACCESS_KEY }}
+            S3_ENDPOINT_URL=${{ vars.S3_ENDPOINT_URL }}
+            S3_REGION=${{ vars.S3_REGION }}
+            S3_BUCKETNAME=${{ vars.S3_BUCKETNAME }}
+            LOKI_HOST=${{ vars.LOKI_HOST }}
+            LOKI_USER=${{ vars.LOKI_USER}}
+            LOKI_PASSWORD=${{ secrets.LOKI_PASSWORD }}
+          flags: "--port=${{ vars.BACKEND_SERVER_PORT }} --allow-unauthenticated"
+
+      - name: Show Output
+        run: echo ${{ steps.deploy.outputs.url }}

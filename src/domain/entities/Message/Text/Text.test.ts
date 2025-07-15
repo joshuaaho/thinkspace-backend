@@ -41,4 +41,4 @@ describe("Text", () => {
       expect(text1.equals(text3)).toBe(false);
     });
   });
-}); 
+});

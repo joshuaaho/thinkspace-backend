@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { beforeEach } from "vitest";
 
-import container from "@containers/index";
+import { iocContainer } from "@containers/index";
 import IUserRepository from "@domain/repositories/IUserRepository";
 import CONSTANTS from "@containers/constants";
 import ICommentRepository from "@domain/repositories/ICommentRepository";
@@ -14,16 +14,20 @@ export const hashPassword = (password: string) => {
   return bcrypt.hashSync(password, saltRounds);
 };
 
-const userRepository = container.get<IUserRepository>(CONSTANTS.UserRepository);
-const commentRepository = container.get<ICommentRepository>(
-  CONSTANTS.CommentRepository
+const userRepository = iocContainer.get<IUserRepository>(
+  CONSTANTS.UserRepository,
 );
-const postRepository = container.get<IPostRepository>(CONSTANTS.PostRepository);
-const notificationRepository = container.get<INotificationRepository>(
-  CONSTANTS.NotificationRepository
+const commentRepository = iocContainer.get<ICommentRepository>(
+  CONSTANTS.CommentRepository,
 );
-const messageRepository = container.get<IMessageRepository>(
-  CONSTANTS.MessageRepository
+const postRepository = iocContainer.get<IPostRepository>(
+  CONSTANTS.PostRepository,
+);
+const notificationRepository = iocContainer.get<INotificationRepository>(
+  CONSTANTS.NotificationRepository,
+);
+const messageRepository = iocContainer.get<IMessageRepository>(
+  CONSTANTS.MessageRepository,
 );
 
 beforeEach(async () => {

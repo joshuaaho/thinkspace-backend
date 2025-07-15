@@ -11,7 +11,6 @@ import INotificationService from "@application/services/INotificationService";
 import CONSTANTS from "@containers/constants";
 
 export function bindServices(container: Container) {
-  // Services
   container.bind<IAuthService>(CONSTANTS.AuthService).to(JwtAuthService);
   container
     .bind<IFileUploadService>(CONSTANTS.FileUploadService)
@@ -23,4 +22,3 @@ export function bindServices(container: Container) {
     .bind<INotificationService>(CONSTANTS.NotificationService)
     .to(SocketIONotificationService);
 }
-

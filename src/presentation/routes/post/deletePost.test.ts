@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import request from "supertest";
 import app from "@index";
-import container from "@containers/index";
+import { iocContainer } from "@containers/index";
 import IUserRepository from "@domain/repositories/IUserRepository";
 import IPostRepository from "@domain/repositories/IPostRepository";
 import CONSTANTS from "@containers/constants";
@@ -18,11 +18,11 @@ describe("Delete Post Route", () => {
     const testPost = createPostOne();
     const testUser = createUserOne();
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
-      const postRepository = container.get<IPostRepository>(
-        CONSTANTS.PostRepository
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
       );
 
       await userRepository.save(testUser);
@@ -45,8 +45,8 @@ describe("Delete Post Route", () => {
     it("should remove post from database", async () => {
       await initializeData();
       await sendRequest();
-      const postRepository = container.get<IPostRepository>(
-        CONSTANTS.PostRepository
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
       );
       const posts = await postRepository.query({ title: testPost.title.value });
       expect(posts).toHaveLength(0);
@@ -55,11 +55,13 @@ describe("Delete Post Route", () => {
     it("should remove all comments from database", async () => {
       await initializeData();
       await sendRequest();
-      const commentRepository = container.get<ICommentRepository>(
-        CONSTANTS.CommentRepository
+      const commentRepository = iocContainer.get<ICommentRepository>(
+        CONSTANTS.CommentRepository,
       );
-      await vi.waitFor( async () => {  
-        const comments = await commentRepository.query({ postId: testPost.id.value });
+      await vi.waitFor(async () => {
+        const comments = await commentRepository.query({
+          postId: testPost.id.value,
+        });
         expect(comments).toHaveLength(0);
       });
     });
@@ -67,8 +69,8 @@ describe("Delete Post Route", () => {
 
   describe("when user is not authenticated", () => {
     async function sendRequest() {
-      const postRepository = container.get<IPostRepository>(
-        CONSTANTS.PostRepository
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
       );
       const testPost = createPostOne();
       await postRepository.save(testPost);
@@ -84,8 +86,8 @@ describe("Delete Post Route", () => {
 
   describe("when post does not exist", () => {
     async function sendRequest() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
       const testUser = createUserOne();
       const accessToken = createAccessToken(testUser.id.value);
@@ -104,11 +106,11 @@ describe("Delete Post Route", () => {
 
   describe("when trying to delete another user's post", () => {
     async function sendRequest() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
-      const postRepository = container.get<IPostRepository>(
-        CONSTANTS.PostRepository
+      const postRepository = iocContainer.get<IPostRepository>(
+        CONSTANTS.PostRepository,
       );
 
       const testUser = createUserTwo();

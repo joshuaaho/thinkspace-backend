@@ -3,13 +3,13 @@ import CONSTANTS from "@containers/constants";
 import IUserRepository from "@domain/repositories/IUserRepository";
 import { Result, Ok, Err } from "ts-results-es";
 import { ResourceNotFoundError } from "@application/useCases/errors";
-
-export type GetByIdCommand = {
+import { ThemePreference } from "@domain/entities/User";
+export type GetUserByIdCommand = {
   userId: string;
 };
 
-export type GetByIdResponse = {
-  id: string; 
+export type GetUserByIdResponse = {
+  id: string;
   username: string;
   email: string;
   work?: string;
@@ -18,7 +18,7 @@ export type GetByIdResponse = {
   interest?: string;
   location?: string;
   profileImgUrl: string;
-  themePreference: string;
+  themePreference: ThemePreference;
   followedBy: string[];
 };
 
@@ -26,15 +26,13 @@ export type GetByIdResponse = {
 class GetById {
   private userRepo: IUserRepository;
 
-  constructor(
-    @inject(CONSTANTS.UserRepository) userRepo: IUserRepository
-  ) {
+  constructor(@inject(CONSTANTS.UserRepository) userRepo: IUserRepository) {
     this.userRepo = userRepo;
   }
 
   public async execute(
-    command: GetByIdCommand,
-  ): Promise<Result<GetByIdResponse, ResourceNotFoundError>> {
+    command: GetUserByIdCommand,
+  ): Promise<Result<GetUserByIdResponse, ResourceNotFoundError>> {
     const someUser = await this.userRepo.findById(command.userId);
 
     if (someUser.isNone()) {
@@ -59,4 +57,4 @@ class GetById {
   }
 }
 
-export default GetById; 
+export default GetById;

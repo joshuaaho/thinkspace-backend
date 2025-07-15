@@ -1,11 +1,15 @@
 import { describe, it, expect } from "vitest";
 import request from "supertest";
 import app from "@index";
-import container from "@containers/index";
+import { iocContainer } from "@containers/index";
 import IUserRepository from "@domain/repositories/IUserRepository";
 import ICommentRepository from "@domain/repositories/ICommentRepository";
 import CONSTANTS from "@containers/constants";
-import { createUserOne, createCommentOne, createUserTwo } from "@utils/testData/testEntities";
+import {
+  createUserOne,
+  createCommentOne,
+  createUserTwo,
+} from "@utils/testData/testEntities";
 import { createAccessToken } from "@utils/testData/infastructure";
 
 describe("Edit Comment Route", () => {
@@ -15,11 +19,11 @@ describe("Edit Comment Route", () => {
     const updatedContent = "Updated comment content";
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
-      const commentRepository = container.get<ICommentRepository>(
-        CONSTANTS.CommentRepository
+      const commentRepository = iocContainer.get<ICommentRepository>(
+        CONSTANTS.CommentRepository,
       );
 
       await userRepository.save(testUser);
@@ -46,21 +50,21 @@ describe("Edit Comment Route", () => {
     it("should update comment in database", async () => {
       await initializeData();
       await sendRequest();
-      const commentRepository = container.get<ICommentRepository>(
-        CONSTANTS.CommentRepository
+      const commentRepository = iocContainer.get<ICommentRepository>(
+        CONSTANTS.CommentRepository,
       );
-      const updatedComment = (await commentRepository.findById(testComment.id.value)).unwrap();
+      const updatedComment = (
+        await commentRepository.findById(testComment.id.value)
+      ).unwrap();
       expect(updatedComment.content.value).toBe(updatedContent);
     });
   });
 
   describe("when user is not authenticated", () => {
     async function sendRequest() {
-      return request(app)
-        .patch("/comments/testcommentid")
-        .send({
-          content: "Updated comment content",
-        });
+      return request(app).patch("/comments/testcommentid").send({
+        content: "Updated comment content",
+      });
     }
 
     it("should return 401 status code", async () => {
@@ -74,11 +78,11 @@ describe("Edit Comment Route", () => {
     const testComment = createCommentOne();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
-      const commentRepository = container.get<ICommentRepository>(
-        CONSTANTS.CommentRepository
+      const commentRepository = iocContainer.get<ICommentRepository>(
+        CONSTANTS.CommentRepository,
       );
 
       await userRepository.save(testUser);
@@ -105,10 +109,12 @@ describe("Edit Comment Route", () => {
     it("should not update comment in database", async () => {
       await initializeData();
       await sendRequest();
-      const commentRepository = container.get<ICommentRepository>(
-        CONSTANTS.CommentRepository
+      const commentRepository = iocContainer.get<ICommentRepository>(
+        CONSTANTS.CommentRepository,
       );
-      const comment = (await commentRepository.findById(testComment.id.value)).unwrap();
+      const comment = (
+        await commentRepository.findById(testComment.id.value)
+      ).unwrap();
       expect(comment.content.value).toBe("Comment one content");
     });
   });
@@ -117,8 +123,8 @@ describe("Edit Comment Route", () => {
     const testUser = createUserOne();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
       await userRepository.save(testUser);
     }
@@ -146,11 +152,11 @@ describe("Edit Comment Route", () => {
     const testComment = createCommentOne();
 
     async function initializeData() {
-      const userRepository = container.get<IUserRepository>(
-        CONSTANTS.UserRepository
+      const userRepository = iocContainer.get<IUserRepository>(
+        CONSTANTS.UserRepository,
       );
-      const commentRepository = container.get<ICommentRepository>(
-        CONSTANTS.CommentRepository
+      const commentRepository = iocContainer.get<ICommentRepository>(
+        CONSTANTS.CommentRepository,
       );
 
       await userRepository.save(testUser);
@@ -164,7 +170,7 @@ describe("Edit Comment Route", () => {
         .patch(`/comments/${testComment.id.value}`)
         .set("Authorization", `Bearer ${accessToken}`)
         .send({
-          content: "a".repeat(1001), // Content too long
+          content: "a".repeat(1001),
         });
     }
 
@@ -174,4 +180,4 @@ describe("Edit Comment Route", () => {
       expect(response.status).toBe(400);
     });
   });
-}); 
+});

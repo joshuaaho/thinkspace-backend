@@ -5,13 +5,12 @@ import {
 } from "testcontainers";
 
 let environment: StartedDockerComposeEnvironment;
-
 export async function setup() {
   const composeFilePath = ".";
-  const composeFile = "docker-compose.yml";
+  const composeFile = "docker-compose.test.yml";
 
   environment = await new DockerComposeEnvironment(composeFilePath, composeFile)
-    .withWaitStrategy("mongo1", Wait.forHealthCheck())
+    .withWaitStrategy("mongodb-test", Wait.forHealthCheck())
     .up();
 }
 

@@ -18,20 +18,15 @@ class DeleteComment {
   private commentRepo: ICommentRepository;
 
   constructor(
-    @inject(CONSTANTS.CommentRepository) commentRepo: ICommentRepository
+    @inject(CONSTANTS.CommentRepository) commentRepo: ICommentRepository,
   ) {
     this.commentRepo = commentRepo;
   }
 
   public async execute(
     request: DeleteCommentCommand,
-    requestor: User
-  ): Promise<
-    Result<
-      void,
-      ResourceNotFoundError | UnauthorizedError
-    >
-  > {
+    requestor: User,
+  ): Promise<Result<void, ResourceNotFoundError | UnauthorizedError>> {
     const someComment = await this.commentRepo.findById(request.commentId);
     if (someComment.isNone()) {
       return Err(new ResourceNotFoundError("Comment not found"));
@@ -40,7 +35,7 @@ class DeleteComment {
     const comment = someComment.value;
     if (!comment.canBeDeletedBy(requestor.id)) {
       return Err(
-        new UnauthorizedError("User is not authorized to delete this comment")
+        new UnauthorizedError("User is not authorized to delete this comment"),
       );
     }
 

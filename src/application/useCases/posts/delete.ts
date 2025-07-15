@@ -15,7 +15,7 @@ export type DeletePostCommand = {
 
 @injectable()
 class DeletePost {
-  private postRepo: IPostRepository;  
+  private postRepo: IPostRepository;
 
   constructor(@inject(CONSTANTS.PostRepository) postRepo: IPostRepository) {
     this.postRepo = postRepo;
@@ -23,7 +23,7 @@ class DeletePost {
 
   public async execute(
     request: DeletePostCommand,
-    requestor: User
+    requestor: User,
   ): Promise<Result<void, UnauthorizedError | ResourceNotFoundError>> {
     const somePost = await this.postRepo.findById(request.postId);
 
@@ -35,7 +35,7 @@ class DeletePost {
 
     if (!post.canBeDeletedBy(requestor.id)) {
       return Err(
-        new UnauthorizedError("User is not authorized to delete this post")
+        new UnauthorizedError("User is not authorized to delete this post"),
       );
     }
 
@@ -46,4 +46,4 @@ class DeletePost {
   }
 }
 
-export default DeletePost; 
+export default DeletePost;

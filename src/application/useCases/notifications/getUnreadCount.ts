@@ -7,21 +7,21 @@ export type GetUnreadCountResponse = {
   unreadCount: number;
 };
 
-@injectable()   
+@injectable()
 class GetUnreadCount {
   private notificationRepo: INotificationRepository;
 
   constructor(
     @inject(CONSTANTS.NotificationRepository)
-    notificationRepo: INotificationRepository
+    notificationRepo: INotificationRepository,
   ) {
     this.notificationRepo = notificationRepo;
   }
 
-  public async execute(
-    requestor: User
-  ): Promise<GetUnreadCountResponse> {
-    const count = await this.notificationRepo.getUnreadCount(requestor.id.value);
+  public async execute(requestor: User): Promise<GetUnreadCountResponse> {
+    const count = await this.notificationRepo.getUnreadCount(
+      requestor.id.value,
+    );
     return { unreadCount: count };
   }
 }
