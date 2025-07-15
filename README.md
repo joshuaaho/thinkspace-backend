@@ -16,9 +16,12 @@ For the frontend, please check out the [thinkspace-frontend repository](https://
 - **User Management**:
   - Create and Update User profiles.
   - Follow and Unfollow functionality.
+  - Latest Post and Comments from Users
+  - User information e.g. Bio, Education...
 - **Image Uploading**: Integration with AWS S3 for image uploads.
 - **User Filtering**: Filter users by username.
 - **Post Filtering**: 
   - Filter posts by title or tags.
   - Sort posts by newest, oldest, or number of likes.
+    
 
